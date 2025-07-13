@@ -251,7 +251,7 @@ const Index = () => {
               <CardContent className="pt-8">
                 <Phone className="h-12 w-12 text-emerald-600 mx-auto mb-4" />
                 <h3 className="text-xl font-bold mb-2">الهاتف</h3>
-                <p className="text-gray-600">+966 537805735</p>
+                <p className="text-base text-zinc-600 font-normal">537805735 966+</p>
               </CardContent>
             </Card>
 
