@@ -3,125 +3,76 @@ import { ArrowRight, Users, FileText, Calendar, MessageCircle, Briefcase, Globe,
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Logo from '@/components/Logo';
-
 const Index = () => {
-  const coreFeatures = [
-    {
-      icon: <Globe className="h-8 w-8 text-emerald-600" />,
-      title: "Job Aggregation & Filtering",
-      titleAr: "تجميع وتصفية الوظائف",
-      description: "Collect and precisely sort jobs from various social media platforms",
-      descriptionAr: "جمع وترتيب الوظائف بدقة من منصات التواصل الاجتماعي المختلفة"
-    },
-    {
-      icon: <FileText className="h-8 w-8 text-blue-600" />,
-      title: "Professional Resume Builder",
-      titleAr: "منشئ السيرة الذاتية المهنية",
-      description: "Design professional resumes with AI analysis and PDF export",
-      descriptionAr: "تصميم سيرة ذاتية مهنية مع تحليل ذكي وتصدير PDF"
-    },
-    {
-      icon: <Calendar className="h-8 w-8 text-purple-600" />,
-      title: "Weekly Expert Sessions",
-      titleAr: "جلسات أسبوعية مع الخبراء",
-      description: "Weekly meetings and workshops with specialized consultants",
-      descriptionAr: "اجتماعات وورش عمل أسبوعية مع استشاريين متخصصين"
-    },
-    {
-      icon: <MessageCircle className="h-8 w-8 text-orange-600" />,
-      title: "Interview Preparation",
-      titleAr: "تحضير المقابلات",
-      description: "Remote mock interviews with field experts",
-      descriptionAr: "مقابلات تجريبية عن بُعد مع خبراء في المجال"
-    },
-    {
-      icon: <Briefcase className="h-8 w-8 text-red-600" />,
-      title: "Business Consultation",
-      titleAr: "الاستشارات التجارية",
-      description: "Expert business consultations and guidance",
-      descriptionAr: "استشارات وإرشادات تجارية من الخبراء"
-    },
-    {
-      icon: <Users className="h-8 w-8 text-indigo-600" />,
-      title: "Professional Communities",
-      titleAr: "المجتمعات المهنية",
-      description: "Networking and peer interaction platforms",
-      descriptionAr: "منصات التواصل والتفاعل مع الأقران"
-    }
-  ];
-
-  const subscriptionTiers = [
-    {
-      name: "Basic",
-      nameAr: "أساسي",
-      price: "30",
-      currency: "SAR",
-      period: "month",
-      periodAr: "شهر",
-      features: [
-        "Job search and filtering",
-        "Basic resume builder",
-        "Community access",
-        "Email support"
-      ],
-      featuresAr: [
-        "البحث وتصفية الوظائف",
-        "منشئ السيرة الذاتية الأساسي",
-        "الوصول للمجتمعات",
-        "الدعم عبر البريد الإلكتروني"
-      ],
-      popular: false
-    },
-    {
-      name: "Professional",
-      nameAr: "مهني",
-      price: "50",
-      currency: "SAR",
-      period: "month",
-      periodAr: "شهر",
-      features: [
-        "All Basic features",
-        "AI resume analysis",
-        "Weekly expert sessions",
-        "Mock interviews",
-        "Priority support"
-      ],
-      featuresAr: [
-        "جميع الميزات الأساسية",
-        "تحليل السيرة الذاتية بالذكاء الاصطناعي",
-        "جلسات أسبوعية مع الخبراء",
-        "مقابلات تجريبية",
-        "دعم أولوية"
-      ],
-      popular: true
-    },
-    {
-      name: "Enterprise",
-      nameAr: "مؤسسي",
-      price: "125",
-      currency: "SAR",
-      period: "month",
-      periodAr: "شهر",
-      features: [
-        "All Professional features",
-        "Business consultation",
-        "Resume distribution service",
-        "Custom business models",
-        "24/7 premium support"
-      ],
-      featuresAr: [
-        "جميع الميزات المهنية",
-        "الاستشارات التجارية",
-        "خدمة توزيع السيرة الذاتية",
-        "نماذج أعمال مخصصة",
-        "دعم مميز على مدار الساعة"
-      ],
-      popular: false
-    }
-  ];
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-emerald-50" dir="rtl">
+  const coreFeatures = [{
+    icon: <Globe className="h-8 w-8 text-emerald-600" />,
+    title: "Job Aggregation & Filtering",
+    titleAr: "تجميع وتصفية الوظائف",
+    description: "Collect and precisely sort jobs from various social media platforms",
+    descriptionAr: "جمع وترتيب الوظائف بدقة من منصات التواصل الاجتماعي المختلفة"
+  }, {
+    icon: <FileText className="h-8 w-8 text-blue-600" />,
+    title: "Professional Resume Builder",
+    titleAr: "منشئ السيرة الذاتية المهنية",
+    description: "Design professional resumes with AI analysis and PDF export",
+    descriptionAr: "تصميم سيرة ذاتية مهنية مع تحليل ذكي وتصدير PDF"
+  }, {
+    icon: <Calendar className="h-8 w-8 text-purple-600" />,
+    title: "Weekly Expert Sessions",
+    titleAr: "جلسات أسبوعية مع الخبراء",
+    description: "Weekly meetings and workshops with specialized consultants",
+    descriptionAr: "اجتماعات وورش عمل أسبوعية مع استشاريين متخصصين"
+  }, {
+    icon: <MessageCircle className="h-8 w-8 text-orange-600" />,
+    title: "Interview Preparation",
+    titleAr: "تحضير المقابلات",
+    description: "Remote mock interviews with field experts",
+    descriptionAr: "مقابلات تجريبية عن بُعد مع خبراء في المجال"
+  }, {
+    icon: <Briefcase className="h-8 w-8 text-red-600" />,
+    title: "Business Consultation",
+    titleAr: "الاستشارات التجارية",
+    description: "Expert business consultations and guidance",
+    descriptionAr: "استشارات وإرشادات تجارية من الخبراء"
+  }, {
+    icon: <Users className="h-8 w-8 text-indigo-600" />,
+    title: "Professional Communities",
+    titleAr: "المجتمعات المهنية",
+    description: "Networking and peer interaction platforms",
+    descriptionAr: "منصات التواصل والتفاعل مع الأقران"
+  }];
+  const subscriptionTiers = [{
+    name: "Basic",
+    nameAr: "أساسي",
+    price: "30",
+    currency: "SAR",
+    period: "month",
+    periodAr: "شهر",
+    features: ["Job search and filtering", "Basic resume builder", "Community access", "Email support"],
+    featuresAr: ["البحث وتصفية الوظائف", "منشئ السيرة الذاتية الأساسي", "الوصول للمجتمعات", "الدعم عبر البريد الإلكتروني"],
+    popular: false
+  }, {
+    name: "Professional",
+    nameAr: "مهني",
+    price: "50",
+    currency: "SAR",
+    period: "month",
+    periodAr: "شهر",
+    features: ["All Basic features", "AI resume analysis", "Weekly expert sessions", "Mock interviews", "Priority support"],
+    featuresAr: ["جميع الميزات الأساسية", "تحليل السيرة الذاتية بالذكاء الاصطناعي", "جلسات أسبوعية مع الخبراء", "مقابلات تجريبية", "دعم أولوية"],
+    popular: true
+  }, {
+    name: "Enterprise",
+    nameAr: "مؤسسي",
+    price: "125",
+    currency: "SAR",
+    period: "month",
+    periodAr: "شهر",
+    features: ["All Professional features", "Business consultation", "Resume distribution service", "Custom business models", "24/7 premium support"],
+    featuresAr: ["جميع الميزات المهنية", "الاستشارات التجارية", "خدمة توزيع السيرة الذاتية", "نماذج أعمال مخصصة", "دعم مميز على مدار الساعة"],
+    popular: false
+  }];
+  return <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-emerald-50" dir="rtl">
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-sm shadow-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
@@ -204,8 +155,7 @@ const Index = () => {
           </div>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {coreFeatures.map((feature, index) => (
-              <Card key={index} className="hover:shadow-lg transition-all duration-300 hover:-translate-y-2 bg-white/80 backdrop-blur-sm border-0 shadow-md">
+            {coreFeatures.map((feature, index) => <Card key={index} className="hover:shadow-lg transition-all duration-300 hover:-translate-y-2 bg-white/80 backdrop-blur-sm border-0 shadow-md">
                 <CardHeader>
                   <div className="flex items-center justify-between mb-4">
                     {feature.icon}
@@ -218,8 +168,7 @@ const Index = () => {
                     {feature.descriptionAr}
                   </CardDescription>
                 </CardHeader>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </div>
       </section>
@@ -237,13 +186,10 @@ const Index = () => {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {subscriptionTiers.map((tier, index) => (
-              <Card key={index} className={`relative hover:shadow-xl transition-all duration-300 ${tier.popular ? 'scale-105 border-2 border-emerald-500 bg-gradient-to-br from-white to-emerald-50' : 'bg-white/80 backdrop-blur-sm'}`}>
-                {tier.popular && (
-                  <div className="absolute -top-4 right-1/2 transform translate-x-1/2 bg-gradient-to-r from-emerald-600 to-blue-600 text-white px-6 py-2 rounded-full text-sm font-bold">
+            {subscriptionTiers.map((tier, index) => <Card key={index} className={`relative hover:shadow-xl transition-all duration-300 ${tier.popular ? 'scale-105 border-2 border-emerald-500 bg-gradient-to-br from-white to-emerald-50' : 'bg-white/80 backdrop-blur-sm'}`}>
+                {tier.popular && <div className="absolute -top-4 right-1/2 transform translate-x-1/2 bg-gradient-to-r from-emerald-600 to-blue-600 text-white px-6 py-2 rounded-full text-sm font-bold">
                     الأكثر شعبية
-                  </div>
-                )}
+                  </div>}
                 <CardHeader className="text-center pb-8">
                   <CardTitle className="text-2xl font-bold text-gray-800 mb-2">{tier.nameAr}</CardTitle>
                   <div className="mb-4">
@@ -253,19 +199,16 @@ const Index = () => {
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-3 mb-8">
-                    {tier.featuresAr.map((feature, featureIndex) => (
-                      <li key={featureIndex} className="flex items-center">
+                    {tier.featuresAr.map((feature, featureIndex) => <li key={featureIndex} className="flex items-center">
                         <CheckCircle className="h-5 w-5 text-emerald-600 ml-3 flex-shrink-0" />
                         <span className="text-gray-700">{feature}</span>
-                      </li>
-                    ))}
+                      </li>)}
                   </ul>
                   <Button className={`w-full ${tier.popular ? 'bg-gradient-to-r from-emerald-600 to-blue-600 hover:from-emerald-700 hover:to-blue-700' : 'bg-gray-800 hover:bg-gray-900'}`}>
                     <a href="/signup">اختر هذه الباقة</a>
                   </Button>
                 </CardContent>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </div>
       </section>
@@ -342,15 +285,12 @@ const Index = () => {
               منصة متكاملة للخدمات المهنية في المملكة العربية السعودية
             </p>
             <div className="border-t border-gray-800 pt-6">
-              <p className="text-gray-400">
-                © 2024 منصة دؤوب. جميع الحقوق محفوظة.
-              </p>
+              <p className="text-gray-400 text-base text-center">©    دؤوب 2025 
+جميع الحقوق محفوظة.</p>
             </div>
           </div>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
