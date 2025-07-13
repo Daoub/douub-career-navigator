@@ -1,8 +1,8 @@
-
 import React from 'react';
 import { ArrowRight, Users, FileText, Calendar, MessageCircle, Briefcase, Globe, Star, CheckCircle, Phone, Mail, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import Logo from '@/components/Logo';
 
 const Index = () => {
   const coreFeatures = [
@@ -126,17 +126,7 @@ const Index = () => {
       <header className="bg-white/80 backdrop-blur-sm shadow-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4 rtl:space-x-reverse">
-              <div className="bg-gradient-to-r from-emerald-600 to-blue-600 text-white p-2 rounded-lg">
-                <Briefcase className="h-6 w-6" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">
-                  دؤوب
-                </h1>
-                <p className="text-sm text-gray-600">Do'oub Platform</p>
-              </div>
-            </div>
+            <Logo size="md" />
             <nav className="hidden md:flex items-center space-x-6 rtl:space-x-reverse">
               <a href="#features" className="text-gray-700 hover:text-emerald-600 transition-colors">الميزات</a>
               <a href="#pricing" className="text-gray-700 hover:text-emerald-600 transition-colors">الأسعار</a>
@@ -155,6 +145,9 @@ const Index = () => {
       <section className="py-20 px-4">
         <div className="container mx-auto text-center">
           <div className="max-w-4xl mx-auto">
+            <div className="flex justify-center mb-8">
+              <Logo size="xl" />
+            </div>
             <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-emerald-600 via-blue-600 to-purple-600 bg-clip-text text-transparent leading-tight">
               ثورة في سوق العمل السعودي
             </h1>
@@ -281,6 +274,9 @@ const Index = () => {
       <section className="py-20 px-4 bg-gradient-to-r from-emerald-600 to-blue-600">
         <div className="container mx-auto text-center">
           <div className="max-w-4xl mx-auto text-white">
+            <div className="flex justify-center mb-6">
+              <Logo size="lg" variant="icon" />
+            </div>
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
               ابدأ رحلتك المهنية اليوم
             </h2>
@@ -339,15 +335,8 @@ const Index = () => {
       <footer className="bg-gray-900 text-white py-12 px-4">
         <div className="container mx-auto">
           <div className="text-center">
-            <div className="flex items-center justify-center space-x-4 rtl:space-x-reverse mb-6">
-              <div className="bg-gradient-to-r from-emerald-600 to-blue-600 text-white p-2 rounded-lg">
-                <Briefcase className="h-6 w-6" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-blue-400 bg-clip-text text-transparent">
-                  دؤوب
-                </h1>
-              </div>
+            <div className="flex justify-center mb-6">
+              <Logo size="md" variant="full" className="text-white" />
             </div>
             <p className="text-gray-400 mb-6">
               منصة متكاملة للخدمات المهنية في المملكة العربية السعودية
