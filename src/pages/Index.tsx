@@ -54,7 +54,7 @@ const Index = () => {
     {
       name: "Basic",
       nameAr: "أساسي",
-      price: "99",
+      price: "30",
       currency: "SAR",
       period: "month",
       periodAr: "شهر",
@@ -75,7 +75,7 @@ const Index = () => {
     {
       name: "Professional",
       nameAr: "مهني",
-      price: "199",
+      price: "50",
       currency: "SAR",
       period: "month",
       periodAr: "شهر",
@@ -98,7 +98,7 @@ const Index = () => {
     {
       name: "Enterprise",
       nameAr: "مؤسسي",
-      price: "299",
+      price: "125",
       currency: "SAR",
       period: "month",
       periodAr: "شهر",
@@ -141,8 +141,10 @@ const Index = () => {
               <a href="#features" className="text-gray-700 hover:text-emerald-600 transition-colors">الميزات</a>
               <a href="#pricing" className="text-gray-700 hover:text-emerald-600 transition-colors">الأسعار</a>
               <a href="#contact" className="text-gray-700 hover:text-emerald-600 transition-colors">تواصل معنا</a>
+              <a href="/demo" className="text-gray-700 hover:text-emerald-600 transition-colors">العرض التوضيحي</a>
+              <a href="/login" className="text-gray-700 hover:text-emerald-600 transition-colors">تسجيل الدخول</a>
               <Button className="bg-gradient-to-r from-emerald-600 to-blue-600 hover:from-emerald-700 hover:to-blue-700">
-                ابدأ الآن
+                <a href="/signup">ابدأ الآن</a>
               </Button>
             </nav>
           </div>
@@ -161,11 +163,11 @@ const Index = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Button size="lg" className="bg-gradient-to-r from-emerald-600 to-blue-600 hover:from-emerald-700 hover:to-blue-700 text-lg px-8 py-3">
-                ابدأ رحلتك المهنية
+                <a href="/signup">ابدأ رحلتك المهنية</a>
                 <ArrowRight className="mr-2 h-5 w-5 rtl:rotate-180" />
               </Button>
               <Button size="lg" variant="outline" className="text-lg px-8 py-3 border-2 border-emerald-600 text-emerald-600 hover:bg-emerald-50">
-                شاهد العرض التوضيحي
+                <a href="/demo">شاهد العرض التوضيحي</a>
               </Button>
             </div>
           </div>
@@ -266,7 +268,7 @@ const Index = () => {
                     ))}
                   </ul>
                   <Button className={`w-full ${tier.popular ? 'bg-gradient-to-r from-emerald-600 to-blue-600 hover:from-emerald-700 hover:to-blue-700' : 'bg-gray-800 hover:bg-gray-900'}`}>
-                    اختر هذه الباقة
+                    <a href="/signup">اختر هذه الباقة</a>
                   </Button>
                 </CardContent>
               </Card>
@@ -286,7 +288,7 @@ const Index = () => {
               انضم إلى آلاف المهنيين الذين طوروا مسيراتهم المهنية معنا
             </p>
             <Button size="lg" className="bg-white text-emerald-600 hover:bg-gray-100 text-lg px-8 py-3">
-              سجل مجاناً الآن
+              <a href="/signup">سجل مجاناً الآن</a>
               <ArrowRight className="mr-2 h-5 w-5 rtl:rotate-180" />
             </Button>
           </div>
