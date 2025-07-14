@@ -1,11 +1,12 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Play, CheckCircle, Users, Clock, Award, Sparkles } from 'lucide-react';
+import { ArrowRight, Play, CheckCircle, Users, Clock, Award, Sparkles, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Logo from '@/components/Logo';
 import DemoVideo from '@/components/DemoVideo';
+import AudioSettings from '@/components/AudioSettings';
 
 const Demo = () => {
   const demoFeatures = [
@@ -67,6 +68,7 @@ const Demo = () => {
           <div className="flex items-center justify-between">
             <Logo size="md" />
             <nav className="flex items-center space-x-6 rtl:space-x-reverse">
+              <AudioSettings />
               <Link to="/" className="text-gray-700 hover:text-emerald-600 transition-colors">
                 الصفحة الرئيسية
               </Link>
@@ -94,9 +96,25 @@ const Demo = () => {
             شاهد كيف تعمل منصتنا المتكاملة للخدمات المهنية وكيف يمكنها تغيير مسيرتك المهنية للأفضل
           </p>
           <div className="flex items-center justify-center space-x-2 rtl:space-x-reverse text-emerald-600 mb-8">
+            <Volume2 className="h-5 w-5" />
+            <span className="text-sm font-medium">تعليق صوتي ذكي مُولد بالذكاء الاصطناعي</span>
             <Sparkles className="h-5 w-5" />
-            <span className="text-sm font-medium">عروض تفاعلية مباشرة</span>
-            <Sparkles className="h-5 w-5" />
+          </div>
+        </div>
+
+        {/* AI Audio Notice */}
+        <div className="bg-gradient-to-r from-blue-50 to-emerald-50 border border-blue-200 rounded-xl p-6 mb-12">
+          <div className="flex items-center justify-center gap-4 text-center">
+            <Volume2 className="h-8 w-8 text-blue-600" />
+            <div>
+              <h3 className="text-lg font-bold text-gray-800 mb-2">تجربة صوتية ذكية</h3>
+              <p className="text-gray-600 mb-4">
+                جميع العروض التوضيحية تتضمن تعليقاً صوتياً مُولداً بالذكاء الاصطناعي باللغة العربية
+              </p>
+              <div className="flex justify-center">
+                <AudioSettings />
+              </div>
+            </div>
           </div>
         </div>
 

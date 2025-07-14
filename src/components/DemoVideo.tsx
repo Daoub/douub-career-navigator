@@ -1,8 +1,11 @@
 
-import React, { useState } from 'react';
-import { Play, Pause, Volume2, VolumeX, Maximize, RotateCcw } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Play, Pause, Volume2, VolumeX, Maximize, RotateCcw, Settings, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
+import { audioService } from '@/services/audioService';
+import AudioSettings from '@/components/AudioSettings';
 
 interface DemoVideoProps {
   title: string;
@@ -20,8 +23,9 @@ const DemoVideo: React.FC<DemoVideoProps> = ({
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
-  const [oscillator, setOscillator] = useState<OscillatorNode | null>(null);
+  const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
+  const [audioGenerated, setAudioGenerated] = useState(false);
+  const { toast } = useToast();
 
   const demoContent = {
     'job-search': {
@@ -64,41 +68,49 @@ const DemoVideo: React.FC<DemoVideoProps> = ({
 
   const currentDemo = demoContent[demoType];
 
-  const playAudio = () => {
-    if (!isMuted && !audioContext) {
-      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const osc = ctx.createOscillator();
-      const gainNode = ctx.createGain();
+  // Generate and play AI audio
+  const generateAndPlayAudio = async () => {
+    if (isMuted) return;
+    
+    setIsGeneratingAudio(true);
+    try {
+      const demoText = audioService.getDemoContent(demoType);
+      const audioUrl = await audioService.generateAudio(demoText);
       
-      osc.connect(gainNode);
-      gainNode.connect(ctx.destination);
+      if (audioUrl) {
+        await audioService.playAudio(audioUrl);
+      }
       
-      osc.frequency.setValueAtTime(440, ctx.currentTime); // A note
-      gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
-      
-      osc.start();
-      setAudioContext(ctx);
-      setOscillator(osc);
+      setAudioGenerated(true);
+    } catch (error) {
+      console.error('Audio generation failed:', error);
+      toast({
+        title: "خطأ في تشغيل الصوت",
+        description: "تعذر توليد أو تشغيل الصوت. سيتم المتابعة بدون صوت.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingAudio(false);
     }
   };
 
   const stopAudio = () => {
-    if (oscillator && audioContext) {
-      oscillator.stop();
-      audioContext.close();
-      setOscillator(null);
-      setAudioContext(null);
-    }
+    audioService.stopAudio();
   };
 
-  const handlePlay = () => {
+  const handlePlay = async () => {
     if (isPlaying) {
       setIsPlaying(false);
       stopAudio();
     } else {
       setIsPlaying(true);
-      playAudio();
-      // محاكاة تشغيل الفيديو
+      
+      // Start audio generation/playback
+      if (!isMuted) {
+        await generateAndPlayAudio();
+      }
+      
+      // Start video progress simulation
       const interval = setInterval(() => {
         setProgress(prev => {
           if (prev >= 100) {
@@ -107,9 +119,9 @@ const DemoVideo: React.FC<DemoVideoProps> = ({
             stopAudio();
             return 100;
           }
-          return prev + 2;
+          return prev + 1.25; // Slower progress to match longer audio
         });
-      }, 200);
+      }, 300);
     }
   };
 
@@ -156,17 +168,28 @@ const DemoVideo: React.FC<DemoVideoProps> = ({
               </div>
 
               {/* Play Button */}
-              <Button 
-                onClick={handlePlay}
-                size="lg"
-                className="bg-white/20 backdrop-blur-sm hover:bg-white/30 border-white/30 text-white"
-              >
-                {isPlaying ? (
-                  <Pause className="h-6 w-6" />
-                ) : (
-                  <Play className="h-6 w-6" />
+              <div className="flex items-center justify-center gap-4">
+                <Button 
+                  onClick={handlePlay}
+                  size="lg"
+                  disabled={isGeneratingAudio}
+                  className="bg-white/20 backdrop-blur-sm hover:bg-white/30 border-white/30 text-white disabled:opacity-50"
+                >
+                  {isGeneratingAudio ? (
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                  ) : isPlaying ? (
+                    <Pause className="h-6 w-6" />
+                  ) : (
+                    <Play className="h-6 w-6" />
+                  )}
+                </Button>
+                
+                {isGeneratingAudio && (
+                  <span className="text-sm text-white/80">
+                    جارٍ توليد الصوت...
+                  </span>
                 )}
-              </Button>
+              </div>
             </div>
           </div>
 
@@ -180,6 +203,7 @@ const DemoVideo: React.FC<DemoVideoProps> = ({
 
           {/* Controls */}
           <div className="absolute top-4 right-4 flex space-x-2 rtl:space-x-reverse">
+            <AudioSettings />
             <Button 
               size="sm" 
               variant="ghost" 
@@ -215,8 +239,21 @@ const DemoVideo: React.FC<DemoVideoProps> = ({
 
         {/* Video Info */}
         <div className="p-6">
-          <h4 className="text-lg font-bold text-gray-800 mb-2">{title}</h4>
+          <div className="flex justify-between items-start mb-2">
+            <h4 className="text-lg font-bold text-gray-800">{title}</h4>
+            {audioGenerated && !isGeneratingAudio && (
+              <div className="flex items-center gap-1 text-xs text-emerald-600">
+                <Volume2 className="h-3 w-3" />
+                <span>صوت ذكي</span>
+              </div>
+            )}
+          </div>
           <p className="text-gray-600 leading-relaxed">{description}</p>
+          {!isMuted && (
+            <p className="text-xs text-gray-500 mt-2">
+              💡 سيتم تشغيل تعليق صوتي مُولد بالذكاء الاصطناعي مع الفيديو
+            </p>
+          )}
         </div>
       </CardContent>
     </Card>
