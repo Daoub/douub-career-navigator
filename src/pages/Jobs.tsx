@@ -1,6 +1,8 @@
 
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import JobModal from '@/components/JobModal';
+import JobApplicationModal from '@/components/JobApplicationModal';
 import { 
   Search, 
   Filter, 
@@ -15,7 +17,10 @@ import {
   Calendar,
   Bell,
   Settings,
-  LogOut
+  LogOut,
+  Bookmark,
+  Eye,
+  Building
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,13 +30,27 @@ import { Badge } from '@/components/ui/badge';
 const Jobs = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('الكل');
+  const [selectedJob, setSelectedJob] = useState(null);
+  const [showJobModal, setShowJobModal] = useState(false);
+  const [showApplicationModal, setShowApplicationModal] = useState(false);
+  const [bookmarkedJobs, setBookmarkedJobs] = useState(new Set());
   
   const handleLogout = () => {
     localStorage.removeItem('userToken');
     sessionStorage.clear();
     navigate('/');
   };
-  const [selectedCategory, setSelectedCategory] = useState('الكل');
+
+  const toggleBookmark = (jobId) => {
+    const newBookmarked = new Set(bookmarkedJobs);
+    if (newBookmarked.has(jobId)) {
+      newBookmarked.delete(jobId);
+    } else {
+      newBookmarked.add(jobId);
+    }
+    setBookmarkedJobs(newBookmarked);
+  };
 
   const jobCategories = [
     'الكل', 'التقنية', 'التسويق', 'المالية', 'الصحة', 'التعليم', 'الهندسة'
@@ -40,27 +59,43 @@ const Jobs = () => {
   const jobs = [
     {
       id: 1,
-      title: 'مطور تطبيقات الهاتف المحمول',
+      title: 'مطور تطبيقات محمول - React Native',
       company: 'شركة التقنية المتقدمة',
       location: 'الرياض، السعودية',
       type: 'دوام كامل',
-      salary: '8,000 - 12,000 ريال',
+      salary: '8000 - 12000 ريال',
       posted: 'منذ يومين',
-      description: 'نبحث عن مطور متخصص في تطبيقات الهاتف المحمول للانضمام لفريقنا...',
-      skills: ['React Native', 'Flutter', 'iOS', 'Android'],
-      category: 'التقنية'
+      description: 'نبحث عن مطور تطبيقات محمول متمرس في React Native لانضمام لفريقنا المتنامي في تطوير التطبيقات المتقدمة',
+      requirements: ['خبرة 3+ سنوات في React Native', 'معرفة بـ JavaScript و TypeScript', 'خبرة في التطبيقات الهجينة', 'معرفة بـ Redux و Context API'],
+      benefits: ['تأمين صحي شامل', 'بدل سكن', 'فرص تطوير مهني', 'عمل مرن', 'مكافآت أداء'],
+      category: 'التقنية',
+      skills: ['React Native', 'JavaScript', 'TypeScript', 'Redux'],
+      experience: '3-5 سنوات',
+      logo: '/placeholder.svg',
+      isBookmarked: false,
+      applicationDeadline: '2024-02-15',
+      companySize: '100-500 موظف',
+      industry: 'التكنولوجيا'
     },
     {
       id: 2,
-      title: 'أخصائي تسويق رقمي',
-      company: 'وكالة الإبداع للتسويق',
+      title: 'مصمم UI/UX',
+      company: 'وكالة الإبداع الرقمي',
       location: 'جدة، السعودية',
-      type: 'دوام كامل',
-      salary: '6,000 - 9,000 ريال',
-      posted: 'منذ 3 أيام',
-      description: 'مطلوب أخصائي تسويق رقمي لإدارة حملات التسويق الإلكتروني...',
-      skills: ['Google Ads', 'Facebook Ads', 'SEO', 'Content Marketing'],
-      category: 'التسويق'
+      type: 'دوام جزئي',
+      salary: '5000 - 8000 ريال',
+      posted: 'منذ 4 أيام',
+      description: 'مطلوب مصمم واجهات مستخدم مبدع لتصميم تطبيقات ومواقع حديثة ومبتكرة تركز على تجربة المستخدم',
+      requirements: ['خبرة في Figma و Adobe XD', 'معرفة بأسس تجربة المستخدم', 'إبداع في التصميم', 'خبرة في التصميم المتجاوب'],
+      benefits: ['مرونة في أوقات العمل', 'بيئة عمل إبداعية', 'مكافآت أداء', 'تدريب مستمر'],
+      category: 'التصميم',
+      skills: ['Figma', 'Adobe XD', 'Photoshop', 'UI/UX'],
+      experience: '2-4 سنوات',
+      logo: '/placeholder.svg',
+      isBookmarked: true,
+      applicationDeadline: '2024-02-20',
+      companySize: '50-100 موظف',
+      industry: 'التسويق الرقمي'
     },
     {
       id: 3,
@@ -68,11 +103,19 @@ const Jobs = () => {
       company: 'مؤسسة الأعمال المالية',
       location: 'الدمام، السعودية',
       type: 'دوام جزئي',
-      salary: '4,000 - 6,000 ريال',
+      salary: '4000 - 6000 ريال',
       posted: 'منذ أسبوع',
-      description: 'نحتاج محاسب مالي لإدارة الحسابات والتقارير المالية...',
-      skills: ['Excel', 'SAP', 'Financial Analysis', 'Accounting'],
-      category: 'المالية'
+      description: 'نحتاج محاسب مالي لإدارة الحسابات والتقارير المالية',
+      requirements: ['شهادة محاسبة', 'خبرة في أنظمة ERP', 'معرفة بالقوانين المحاسبية السعودية', 'دقة في العمل'],
+      benefits: ['راتب مجزي', 'تأمين طبي', 'إجازات', 'بيئة عمل مهنية'],
+      category: 'المالية',
+      skills: ['محاسبة', 'ERP', 'Excel', 'تحليل مالي'],
+      experience: '3-5 سنوات',
+      logo: '/placeholder.svg',
+      isBookmarked: false,
+      applicationDeadline: '2024-02-12',
+      companySize: '20-50 موظف',
+      industry: 'الخدمات المالية'
     }
   ];
 
@@ -94,18 +137,17 @@ const Jobs = () => {
                 <Briefcase className="h-6 w-6" />
               </div>
               <div>
-                <Link to="/dashboard">
-                  <h1 className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent hover:opacity-80 transition-opacity">
-                    دؤوب
-                  </h1>
-                </Link>
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent hover:opacity-80 transition-opacity cursor-pointer"
+                    onClick={() => navigate('/dashboard')}>
+                  دؤوب
+                </h1>
                 <p className="text-sm text-gray-600">البحث عن الوظائف</p>
               </div>
             </div>
             <nav className="flex items-center space-x-4 rtl:space-x-reverse">
-              <Link to="/dashboard">
-                <Button variant="ghost" size="sm">لوحة التحكم</Button>
-              </Link>
+              <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')}>
+                لوحة التحكم
+              </Button>
               <Button variant="ghost" size="icon">
                 <Bell className="h-5 w-5" />
               </Button>
@@ -171,28 +213,44 @@ const Jobs = () => {
               <Card key={job.id} className="bg-white/80 backdrop-blur-sm hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="text-lg font-bold text-gray-800 mb-2">
-                        {job.title}
-                      </CardTitle>
-                      <div className="flex items-center gap-2 text-gray-600 mb-2">
-                        <Building2 className="h-4 w-4" />
-                        <span>{job.company}</span>
+                    <div className="flex items-center space-x-4 rtl:space-x-reverse">
+                      <div className="w-12 h-12 bg-gradient-to-r from-emerald-600 to-blue-600 rounded-lg flex items-center justify-center">
+                        <Building className="h-6 w-6 text-white" />
                       </div>
-                      <div className="flex items-center gap-4 text-sm text-gray-500">
-                        <div className="flex items-center gap-1">
-                          <MapPin className="h-4 w-4" />
-                          <span>{job.location}</span>
+                      <div>
+                        <CardTitle 
+                          className="text-lg font-bold text-gray-800 mb-2 cursor-pointer hover:text-emerald-600 transition-colors"
+                          onClick={() => {
+                            setSelectedJob(job);
+                            setShowJobModal(true);
+                          }}
+                        >
+                          {job.title}
+                        </CardTitle>
+                        <div className="flex items-center gap-2 text-gray-600 mb-2">
+                          <Building2 className="h-4 w-4" />
+                          <span>{job.company}</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <Clock className="h-4 w-4" />
-                          <span>{job.posted}</span>
+                        <div className="flex items-center gap-4 text-sm text-gray-500">
+                          <div className="flex items-center gap-1">
+                            <MapPin className="h-4 w-4" />
+                            <span>{job.location}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Clock className="h-4 w-4" />
+                            <span>{job.posted}</span>
+                          </div>
                         </div>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Button variant="ghost" size="icon">
-                        <Heart className="h-4 w-4" />
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        onClick={() => toggleBookmark(job.id)}
+                        className={bookmarkedJobs.has(job.id) ? "text-yellow-600" : ""}
+                      >
+                        <Bookmark className={`h-4 w-4 ${bookmarkedJobs.has(job.id) ? 'fill-current' : ''}`} />
                       </Button>
                       <Button variant="ghost" size="icon">
                         <Share2 className="h-4 w-4" />
@@ -208,26 +266,50 @@ const Jobs = () => {
                         <DollarSign className="h-4 w-4" />
                         <span className="font-medium">{job.salary}</span>
                       </div>
+                      <Badge variant="secondary" className="text-xs">{job.experience}</Badge>
                     </div>
                     
-                    <p className="text-gray-600 text-sm leading-relaxed">
+                    <p className="text-gray-600 text-sm leading-relaxed line-clamp-2">
                       {job.description}
                     </p>
                     
                     <div className="flex flex-wrap gap-2">
-                      {job.skills.map((skill) => (
+                      {job.skills.slice(0, 3).map((skill) => (
                         <Badge key={skill} variant="secondary" className="text-xs">
                           {skill}
                         </Badge>
                       ))}
+                      {job.skills.length > 3 && (
+                        <Badge variant="outline" className="text-xs">
+                          +{job.skills.length - 3}
+                        </Badge>
+                      )}
+                    </div>
+
+                    <div className="text-xs text-gray-500">
+                      آخر موعد للتقديم: {job.applicationDeadline}
                     </div>
                     
                     <div className="flex gap-2 pt-2">
-                      <Button className="flex-1 bg-gradient-to-r from-emerald-600 to-blue-600 hover:from-emerald-700 hover:to-blue-700">
+                      <Button 
+                        className="flex-1 bg-gradient-to-r from-emerald-600 to-blue-600 hover:from-emerald-700 hover:to-blue-700"
+                        onClick={() => {
+                          setSelectedJob(job);
+                          setShowApplicationModal(true);
+                        }}
+                      >
                         تقديم الآن
                       </Button>
-                      <Button variant="outline" className="flex-1">
-                        عرض التفاصيل
+                      <Button 
+                        variant="outline" 
+                        className="flex-1"
+                        onClick={() => {
+                          setSelectedJob(job);
+                          setShowJobModal(true);
+                        }}
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        التفاصيل
                       </Button>
                     </div>
                   </div>
@@ -302,6 +384,30 @@ const Jobs = () => {
           </div>
         </div>
       </div>
+
+      {/* Job Details Modal */}
+      <JobModal
+        job={selectedJob}
+        isOpen={showJobModal}
+        onClose={() => setShowJobModal(false)}
+        onApply={(jobId) => {
+          setShowJobModal(false);
+          setShowApplicationModal(true);
+        }}
+        onBookmark={toggleBookmark}
+        isBookmarked={selectedJob ? bookmarkedJobs.has(selectedJob.id) : false}
+      />
+
+      {/* Job Application Modal */}
+      <JobApplicationModal
+        job={selectedJob}
+        isOpen={showApplicationModal}
+        onClose={() => setShowApplicationModal(false)}
+        onSubmit={(applicationData) => {
+          // Handle application submission
+          console.log('Application submitted:', applicationData);
+        }}
+      />
     </div>
   );
 };
