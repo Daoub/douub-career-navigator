@@ -20,6 +20,8 @@ const DemoVideo: React.FC<DemoVideoProps> = ({
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
+  const [oscillator, setOscillator] = useState<OscillatorNode | null>(null);
 
   const demoContent = {
     'job-search': {
@@ -62,17 +64,47 @@ const DemoVideo: React.FC<DemoVideoProps> = ({
 
   const currentDemo = demoContent[demoType];
 
+  const playAudio = () => {
+    if (!isMuted && !audioContext) {
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+      
+      osc.connect(gainNode);
+      gainNode.connect(ctx.destination);
+      
+      osc.frequency.setValueAtTime(440, ctx.currentTime); // A note
+      gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
+      
+      osc.start();
+      setAudioContext(ctx);
+      setOscillator(osc);
+    }
+  };
+
+  const stopAudio = () => {
+    if (oscillator && audioContext) {
+      oscillator.stop();
+      audioContext.close();
+      setOscillator(null);
+      setAudioContext(null);
+    }
+  };
+
   const handlePlay = () => {
     if (isPlaying) {
       setIsPlaying(false);
+      stopAudio();
     } else {
       setIsPlaying(true);
+      playAudio();
       // محاكاة تشغيل الفيديو
       const interval = setInterval(() => {
         setProgress(prev => {
           if (prev >= 100) {
             clearInterval(interval);
             setIsPlaying(false);
+            stopAudio();
             return 100;
           }
           return prev + 2;
@@ -84,6 +116,7 @@ const DemoVideo: React.FC<DemoVideoProps> = ({
   const handleRestart = () => {
     setProgress(0);
     setIsPlaying(false);
+    stopAudio();
   };
 
   return (

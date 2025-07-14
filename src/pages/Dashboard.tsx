@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import InterviewPrep from '@/components/InterviewPrep';
 import TrialPackage from '@/components/TrialPackage';
+import PackageSelector from '@/components/PackageSelector';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -143,6 +144,11 @@ const Dashboard = () => {
         </Card>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Package Selection - Takes full width */}
+          <div className="lg:col-span-3 mb-8">
+            <PackageSelector />
+          </div>
+          
           {/* Trial Package - Takes full width on mobile */}
           <div className="lg:col-span-1">
             <TrialPackage />
