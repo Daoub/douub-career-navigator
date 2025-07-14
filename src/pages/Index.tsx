@@ -44,7 +44,7 @@ const Index = () => {
   const subscriptionTiers = [{
     name: "Basic",
     nameAr: "أساسي",
-    price: "30",
+    price: "20",
     currency: "SAR",
     period: "month",
     periodAr: "شهر",
