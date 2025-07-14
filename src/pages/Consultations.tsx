@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   Calendar, 
   Clock, 
@@ -26,7 +26,14 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const Consultations = () => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
+  
+  const handleLogout = () => {
+    localStorage.removeItem('userToken');
+    sessionStorage.clear();
+    navigate('/');
+  };
   const [selectedSpecialty, setSelectedSpecialty] = useState('الكل');
 
   const specialties = ['الكل', 'التقنية', 'إدارة الأعمال', 'التسويق', 'المالية', 'الموارد البشرية'];
@@ -147,7 +154,7 @@ const Consultations = () => {
               <Button variant="ghost" size="icon">
                 <Settings className="h-5 w-5" />
               </Button>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" onClick={handleLogout}>
                 <LogOut className="h-5 w-5" />
               </Button>
             </nav>

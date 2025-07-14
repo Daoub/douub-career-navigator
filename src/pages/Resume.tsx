@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   FileText, 
   Download, 
@@ -29,7 +29,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ResumeAnalyzer from '@/components/ResumeAnalyzer';
 
 const Resume = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('basic');
+  
+  const handleLogout = () => {
+    localStorage.removeItem('userToken');
+    sessionStorage.clear();
+    navigate('/');
+  };
   const [resumeData, setResumeData] = useState({
     personalInfo: {
       name: 'أحمد محمد العلي',
@@ -100,7 +107,7 @@ const Resume = () => {
               <Button variant="ghost" size="icon">
                 <Settings className="h-5 w-5" />
               </Button>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" onClick={handleLogout}>
                 <LogOut className="h-5 w-5" />
               </Button>
             </nav>

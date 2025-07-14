@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   Briefcase, 
   FileText, 
@@ -21,6 +21,16 @@ import InterviewPrep from '@/components/InterviewPrep';
 import TrialPackage from '@/components/TrialPackage';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+  
+  const handleLogout = () => {
+    // Clear any user data/tokens here
+    localStorage.removeItem('userToken');
+    sessionStorage.clear();
+    // Navigate to home page
+    navigate('/');
+  };
+
   const quickStats = [
     { title: "طلبات التقديم", titleEn: "Applications", value: "12", icon: FileText, color: "text-blue-600" },
     { title: "عروض العمل", titleEn: "Job Offers", value: "3", icon: Briefcase, color: "text-green-600" },
@@ -65,7 +75,7 @@ const Dashboard = () => {
               <Button variant="ghost" size="icon">
                 <Settings className="h-5 w-5" />
               </Button>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" onClick={handleLogout}>
                 <LogOut className="h-5 w-5" />
               </Button>
             </nav>

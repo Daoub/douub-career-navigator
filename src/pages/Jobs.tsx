@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   Search, 
   Filter, 
@@ -23,7 +23,14 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 
 const Jobs = () => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
+  
+  const handleLogout = () => {
+    localStorage.removeItem('userToken');
+    sessionStorage.clear();
+    navigate('/');
+  };
   const [selectedCategory, setSelectedCategory] = useState('الكل');
 
   const jobCategories = [
@@ -105,7 +112,7 @@ const Jobs = () => {
               <Button variant="ghost" size="icon">
                 <Settings className="h-5 w-5" />
               </Button>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" onClick={handleLogout}>
                 <LogOut className="h-5 w-5" />
               </Button>
             </nav>
