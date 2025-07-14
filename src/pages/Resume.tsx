@@ -26,6 +26,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import ResumeAnalyzer from '@/components/ResumeAnalyzer';
 
 const Resume = () => {
   const [activeTab, setActiveTab] = useState('basic');
@@ -130,12 +131,13 @@ const Resume = () => {
             </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-5">
+              <TabsList className="grid w-full grid-cols-6">
                 <TabsTrigger value="basic">المعلومات الأساسية</TabsTrigger>
                 <TabsTrigger value="experience">الخبرة</TabsTrigger>
                 <TabsTrigger value="education">التعليم</TabsTrigger>
                 <TabsTrigger value="skills">المهارات</TabsTrigger>
                 <TabsTrigger value="certificates">الشهادات</TabsTrigger>
+                <TabsTrigger value="analysis">التحليل الذكي</TabsTrigger>
               </TabsList>
 
               <TabsContent value="basic" className="space-y-6">
@@ -343,6 +345,10 @@ const Resume = () => {
                     ))}
                   </CardContent>
                 </Card>
+              </TabsContent>
+
+              <TabsContent value="analysis" className="space-y-6">
+                <ResumeAnalyzer />
               </TabsContent>
             </Tabs>
           </div>

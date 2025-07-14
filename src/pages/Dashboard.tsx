@@ -17,6 +17,8 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import InterviewPrep from '@/components/InterviewPrep';
+import TrialPackage from '@/components/TrialPackage';
 
 const Dashboard = () => {
   const quickStats = [
@@ -130,53 +132,66 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Recent Activity */}
-          <Card className="bg-white/80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="text-xl font-bold text-gray-800">النشاط الأخير</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {recentActivity.map((activity, index) => (
-                  <div key={index} className="flex items-center space-x-3 rtl:space-x-reverse p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                    <div className="bg-gradient-to-r from-emerald-100 to-blue-100 p-2 rounded-full">
-                      <activity.icon className="h-4 w-4 text-emerald-600" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-800">{activity.action}</p>
-                      <p className="text-xs text-gray-500">{activity.time}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Trial Package - Takes full width on mobile */}
+          <div className="lg:col-span-1">
+            <TrialPackage />
+          </div>
 
-          {/* Upcoming Events */}
-          <Card className="bg-white/80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="text-xl font-bold text-gray-800">الأحداث القادمة</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {upcomingEvents.map((event, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:border-emerald-300 transition-colors">
-                    <div className="flex items-center space-x-3 rtl:space-x-reverse">
-                      <Clock className="h-4 w-4 text-emerald-600" />
-                      <div>
-                        <p className="text-sm font-medium text-gray-800">{event.title}</p>
-                        <p className="text-xs text-gray-500">{event.date}</p>
+          <div className="lg:col-span-2 space-y-8">
+            {/* Interview Preparation */}
+            <InterviewPrep />
+            
+            {/* Recent Activity & Events */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Recent Activity */}
+              <Card className="bg-white/80 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="text-xl font-bold text-gray-800">النشاط الأخير</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {recentActivity.map((activity, index) => (
+                      <div key={index} className="flex items-center space-x-3 rtl:space-x-reverse p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                        <div className="bg-gradient-to-r from-emerald-100 to-blue-100 p-2 rounded-full">
+                          <activity.icon className="h-4 w-4 text-emerald-600" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-gray-800">{activity.action}</p>
+                          <p className="text-xs text-gray-500">{activity.time}</p>
+                        </div>
                       </div>
-                    </div>
-                    <span className="text-xs bg-emerald-100 text-emerald-800 px-2 py-1 rounded-full">
-                      {event.type}
-                    </span>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+
+              {/* Upcoming Events */}
+              <Card className="bg-white/80 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="text-xl font-bold text-gray-800">الأحداث القادمة</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {upcomingEvents.map((event, index) => (
+                      <div key={index} className="flex items-center justify-between p-3 rounded-lg border border-gray-200 hover:border-emerald-300 transition-colors">
+                        <div className="flex items-center space-x-3 rtl:space-x-reverse">
+                          <Clock className="h-4 w-4 text-emerald-600" />
+                          <div>
+                            <p className="text-sm font-medium text-gray-800">{event.title}</p>
+                            <p className="text-xs text-gray-500">{event.date}</p>
+                          </div>
+                        </div>
+                        <span className="text-xs bg-emerald-100 text-emerald-800 px-2 py-1 rounded-full">
+                          {event.type}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </div>
 
         {/* Progress Section */}
