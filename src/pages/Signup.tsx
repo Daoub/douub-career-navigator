@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Briefcase, ArrowRight, User, Mail, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 
 const Signup = () => {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -40,8 +41,8 @@ const Signup = () => {
     // Simulate signup process
     setTimeout(() => {
       setIsLoading(false);
-      // Redirect to dashboard would happen here
-      window.location.href = '/dashboard';
+      // Navigate to dashboard using React Router
+      navigate('/dashboard');
     }, 2000);
   };
 
