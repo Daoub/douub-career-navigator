@@ -45,7 +45,14 @@ const ResumeAnalyzer: React.FC = () => {
     }, 3000);
   };
 
-  const getCompetitivenessColor = (level: string) => {
+  const getCompetitivenessFromScore = (score: number) => {
+    if (score >= 80) return 'high';
+    if (score >= 60) return 'medium';
+    return 'low';
+  };
+
+  const getCompetitivenessColor = (score: number) => {
+    const level = getCompetitivenessFromScore(score);
     switch (level) {
       case 'low': return 'text-red-600';
       case 'medium': return 'text-yellow-600';
@@ -54,38 +61,56 @@ const ResumeAnalyzer: React.FC = () => {
     }
   };
 
-  const getCompetitivenessLabel = (level: string) => {
+  const getCompetitivenessLabel = (score: number) => {
+    const level = getCompetitivenessFromScore(score);
     switch (level) {
-      case 'low': return 'منخفضة';
-      case 'medium': return 'متوسطة';
-      case 'high': return 'عالية';
-      default: return 'غير محدد';
+      case 'low': return language === 'ar' ? 'منخفضة' : 'Low';
+      case 'medium': return language === 'ar' ? 'متوسطة' : 'Medium';
+      case 'high': return language === 'ar' ? 'عالية' : 'High';
+      default: return language === 'ar' ? 'غير محدد' : 'Unknown';
     }
   };
 
   return (
     <div className="space-y-6">
+      {/* Header */}
+      <div className="text-center">
+        <h2 className="text-hero gradient-text-hero mb-4">
+          {language === 'ar' ? 'تحليل السيرة الذاتية بالذكاء الاصطناعي' : 'AI Resume Analysis'}
+        </h2>
+        <p className="text-muted-foreground">
+          {language === 'ar' 
+            ? 'احصل على تحليل شامل لسيرتك الذاتية مع توصيات للتحسين'
+            : 'Get comprehensive analysis of your resume with improvement recommendations'
+          }
+        </p>
+      </div>
+
       {/* Input Section */}
-      <Card className="bg-white/80 backdrop-blur-sm">
+      <Card className="card-vision">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Brain className="h-5 w-5 text-purple-600" />
-            تحليل السيرة الذاتية بالذكاء الاصطناعي
+            <Brain className="h-5 w-5 text-primary" />
+            {language === 'ar' ? 'تحليل السيرة الذاتية' : 'Resume Analysis'}
           </CardTitle>
           <CardDescription>
-            احصل على تحليل شامل لسيرتك الذاتية مع توصيات للتحسين
+            {language === 'ar' 
+              ? 'الصق محتوى سيرتك الذاتية أو اكتب المعلومات الأساسية'
+              : 'Paste your resume content or write basic information'
+            }
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              نص السيرة الذاتية
-            </label>
             <Textarea
-              placeholder="الصق محتوى سيرتك الذاتية هنا أو اكتب المعلومات الأساسية..."
+              placeholder={language === 'ar' 
+                ? 'الصق محتوى سيرتك الذاتية هنا أو اكتب المعلومات الأساسية...'
+                : 'Paste your resume content here or write basic information...'
+              }
               value={resumeText}
               onChange={(e) => setResumeText(e.target.value)}
-              className="text-right min-h-[200px]"
+              className="min-h-[200px]"
+              dir={language === 'ar' ? 'rtl' : 'ltr'}
             />
           </div>
           
@@ -93,24 +118,24 @@ const ResumeAnalyzer: React.FC = () => {
             <Button 
               onClick={analyzeResume}
               disabled={isAnalyzing}
-              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+              className="bg-gradient-primary btn-gradient-hover"
             >
               {isAnalyzing ? (
                 <>
                   <Zap className="h-4 w-4 mr-2 animate-pulse" />
-                  جاري التحليل...
+                  {language === 'ar' ? 'جاري التحليل...' : 'Analyzing...'}
                 </>
               ) : (
                 <>
                   <Brain className="h-4 w-4 mr-2" />
-                  تحليل السيرة الذاتية
+                  {language === 'ar' ? 'تحليل السيرة الذاتية' : 'Analyze Resume'}
                 </>
               )}
             </Button>
             
             <Button variant="outline" className="flex items-center gap-2">
               <Upload className="h-4 w-4" />
-              رفع ملف PDF
+              {language === 'ar' ? 'رفع ملف PDF' : 'Upload PDF'}
             </Button>
           </div>
         </CardContent>
@@ -118,106 +143,270 @@ const ResumeAnalyzer: React.FC = () => {
 
       {/* Analysis Results */}
       {analysisResult && (
-        <div className="space-y-6">
-          {/* Overall Score */}
-          <Card className="bg-white/80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <span>النتيجة الإجمالية</span>
-                <span className="text-2xl font-bold text-emerald-600">
-                  {analysisResult.score}/100
-                </span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Progress value={analysisResult.score} className="mb-4" />
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-600">مستوى التنافسية</span>
-                <span className={`font-medium ${getCompetitivenessColor(analysisResult.competitiveness)}`}>
-                  {getCompetitivenessLabel(analysisResult.competitiveness)}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="overview" className="flex items-center gap-2">
+              <BarChart3 className="h-4 w-4" />
+              {language === 'ar' ? 'نظرة عامة' : 'Overview'}
+            </TabsTrigger>
+            <TabsTrigger value="insights" className="flex items-center gap-2">
+              <Target className="h-4 w-4" />
+              {language === 'ar' ? 'الرؤى' : 'Insights'}
+            </TabsTrigger>
+            <TabsTrigger value="keywords" className="flex items-center gap-2">
+              <Zap className="h-4 w-4" />
+              {language === 'ar' ? 'الكلمات المفتاحية' : 'Keywords'}
+            </TabsTrigger>
+            <TabsTrigger value="saudi" className="flex items-center gap-2">
+              <Shield className="h-4 w-4" />
+              {language === 'ar' ? 'التوافق السعودي' : 'Saudi Compliance'}
+            </TabsTrigger>
+            <TabsTrigger value="recommendations" className="flex items-center gap-2">
+              <Award className="h-4 w-4" />
+              {language === 'ar' ? 'التوصيات' : 'Recommendations'}
+            </TabsTrigger>
+          </TabsList>
 
-          {/* Strengths */}
-          <Card className="bg-white/80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-green-700">
-                <CheckCircle className="h-5 w-5" />
-                نقاط القوة
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2">
-                {analysisResult.strengths.map((strength, index) => (
-                  <li key={index} className="flex items-start gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700">{strength}</span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-
-          {/* Weaknesses */}
-          <Card className="bg-white/80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-red-700">
-                <AlertTriangle className="h-5 w-5" />
-                نقاط التحسين
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2">
-                {analysisResult.weaknesses.map((weakness, index) => (
-                  <li key={index} className="flex items-start gap-2">
-                    <X className="h-4 w-4 text-red-600 mt-0.5 flex-shrink-0" />
-                    <span className="text-gray-700">{weakness}</span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-
-          {/* Suggestions */}
-          <Card className="bg-white/80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-blue-700">
-                <Zap className="h-5 w-5" />
-                توصيات للتحسين
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-3">
-                {analysisResult.suggestions.map((suggestion, index) => (
-                  <li key={index} className="flex items-start gap-2">
-                    <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full min-w-fit">
-                      {index + 1}
+          <TabsContent value="overview">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Overall Score */}
+              <Card className="card-vision">
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <span>{language === 'ar' ? 'النتيجة الإجمالية' : 'Overall Score'}</span>
+                    <span className="text-2xl font-bold text-primary">
+                      {analysisResult.metrics.overallScore}/100
                     </span>
-                    <span className="text-gray-700">{suggestion}</span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Progress value={analysisResult.metrics.overallScore} className="mb-4" />
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">
+                      {language === 'ar' ? 'مستوى التنافسية' : 'Competitiveness Level'}
+                    </span>
+                    <span className={`font-medium ${getCompetitivenessColor(analysisResult.metrics.overallScore)}`}>
+                      {getCompetitivenessLabel(analysisResult.metrics.overallScore)}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
 
-          {/* Keywords Found */}
-          <Card className="bg-white/80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle>الكلمات المفتاحية المكتشفة</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
-                {analysisResult.keywords.map((keyword, index) => (
-                  <Badge key={index} variant="secondary" className="text-sm">
-                    {keyword}
-                  </Badge>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              {/* ATS Score */}
+              <Card className="card-vision">
+                <CardHeader>
+                  <CardTitle>{language === 'ar' ? 'توافق ATS' : 'ATS Compatibility'}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-secondary mb-2">
+                    {analysisResult.metrics.atsScore}/100
+                  </div>
+                  <Progress value={analysisResult.metrics.atsScore} className="mb-2" />
+                  <p className="text-sm text-muted-foreground">
+                    {language === 'ar' 
+                      ? 'مدى توافق سيرتك مع أنظمة التتبع الآلي'
+                      : 'How well your resume works with tracking systems'
+                    }
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Saudi Compliance */}
+              <Card className="card-vision">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Shield className="h-5 w-5 text-primary" />
+                    {language === 'ar' ? 'التوافق السعودي' : 'Saudi Compliance'}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-success mb-2">
+                    {analysisResult.saudiCompliance.score}/100
+                  </div>
+                  <Progress value={analysisResult.saudiCompliance.score} className="mb-2" />
+                  <p className="text-sm text-muted-foreground">
+                    {language === 'ar' 
+                      ? 'مدى توافق سيرتك مع متطلبات السوق السعودي'
+                      : 'How well your resume meets Saudi market requirements'
+                    }
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="insights">
+            <div className="space-y-6">
+              {/* Strengths */}
+              <Card className="card-vision">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-success">
+                    <CheckCircle className="h-5 w-5" />
+                    {language === 'ar' ? 'نقاط القوة' : 'Strengths'}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2">
+                    {analysisResult.insights.filter(insight => insight.type === 'strength').map((insight, index) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <CheckCircle className="h-4 w-4 text-success mt-0.5 flex-shrink-0" />
+                        <span className="text-foreground">
+                          {language === 'ar' ? insight.descriptionAr : insight.description}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+
+              {/* Weaknesses */}
+              <Card className="card-vision">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-destructive">
+                    <AlertTriangle className="h-5 w-5" />
+                    {language === 'ar' ? 'نقاط التحسين' : 'Areas for Improvement'}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2">
+                    {analysisResult.insights.filter(insight => insight.type === 'weakness').map((insight, index) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <X className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
+                        <span className="text-foreground">
+                          {language === 'ar' ? insight.descriptionAr : insight.description}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="keywords">
+            <div className="space-y-6">
+              {/* Keywords Found */}
+              <Card className="card-vision">
+                <CardHeader>
+                  <CardTitle className="text-success">
+                    {language === 'ar' ? 'الكلمات المفتاحية الموجودة' : 'Keywords Found'}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2">
+                    {analysisResult.keywordAnalysis.present.map((keyword, index) => (
+                      <Badge key={index} variant="default" className="bg-success">
+                        {keyword}
+                      </Badge>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Missing Keywords */}
+              <Card className="card-vision">
+                <CardHeader>
+                  <CardTitle className="text-warning">
+                    {language === 'ar' ? 'الكلمات المفتاحية المفقودة' : 'Missing Keywords'}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2">
+                    {analysisResult.keywordAnalysis.missing.map((keyword, index) => (
+                      <Badge key={index} variant="outline" className="border-warning">
+                        {keyword}
+                      </Badge>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="saudi">
+            <div className="space-y-6">
+              {/* Saudi Compliance Issues */}
+              <Card className="card-vision">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Shield className="h-5 w-5 text-primary" />
+                    {language === 'ar' ? 'مشاكل التوافق' : 'Compliance Issues'}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {analysisResult.saudiCompliance.issues.map((issue, index) => (
+                      <div key={index} className="p-3 rounded-lg border">
+                        <div className="flex items-start gap-2">
+                          <AlertTriangle className={`h-4 w-4 mt-1 flex-shrink-0 ${
+                            issue.severity === 'critical' ? 'text-destructive' : 
+                            issue.severity === 'warning' ? 'text-warning' : 'text-muted-foreground'
+                          }`} />
+                          <div>
+                            <p className="font-medium">
+                              {language === 'ar' ? issue.messageAr : issue.message}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {language === 'ar' ? issue.solutionAr : issue.solution}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="recommendations">
+            <div className="space-y-6">
+              {/* Immediate Recommendations */}
+              <Card className="card-vision">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-warning">
+                    <Zap className="h-5 w-5" />
+                    {language === 'ar' ? 'توصيات فورية' : 'Immediate Recommendations'}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-3">
+                    {(language === 'ar' ? analysisResult.recommendations.immediateAr : analysisResult.recommendations.immediate).map((rec, index) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <span className="bg-warning/10 text-warning text-xs font-medium px-2 py-1 rounded-full min-w-fit">
+                          {index + 1}
+                        </span>
+                        <span className="text-foreground">{rec}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+
+              {/* Long-term Recommendations */}
+              <Card className="card-vision">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-primary">
+                    <Award className="h-5 w-5" />
+                    {language === 'ar' ? 'توصيات طويلة المدى' : 'Long-term Recommendations'}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-3">
+                    {(language === 'ar' ? analysisResult.recommendations.longTermAr : analysisResult.recommendations.longTerm).map((rec, index) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <span className="bg-primary/10 text-primary text-xs font-medium px-2 py-1 rounded-full min-w-fit">
+                          {index + 1}
+                        </span>
+                        <span className="text-foreground">{rec}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
       )}
     </div>
   );
