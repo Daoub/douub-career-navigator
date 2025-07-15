@@ -13,7 +13,9 @@ import {
   LogOut,
   Plus,
   Eye,
-  Clock
+  Clock,
+  Video,
+  BookOpen
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -114,7 +116,7 @@ const Dashboard = () => {
             <CardTitle className="text-xl font-bold text-gray-800">الإجراءات السريعة</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <Link to="/jobs">
                 <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
                   <Search className="mr-2 h-4 w-4" />
@@ -131,6 +133,18 @@ const Dashboard = () => {
                 <Button className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
                   <Users className="mr-2 h-4 w-4" />
                   المجتمعات المهنية
+                </Button>
+              </Link>
+              <Link to="/meetings">
+                <Button className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700">
+                  <Video className="mr-2 h-4 w-4" />
+                  الاجتماعات الأسبوعية
+                </Button>
+              </Link>
+              <Link to="/learning">
+                <Button className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700">
+                  <BookOpen className="mr-2 h-4 w-4" />
+                  التعلم والتخصصات
                 </Button>
               </Link>
               <Link to="/consultations">
