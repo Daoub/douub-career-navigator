@@ -15,6 +15,8 @@ import Communities from "./pages/Communities";
 import Consultations from "./pages/Consultations";
 import Demo from "./pages/Demo";
 import NotFound from "./pages/NotFound";
+import Meetings from "./pages/Meetings";
+import Learning from "./pages/Learning";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +35,8 @@ const App = () => (
           <Route path="/jobs" element={<Jobs />} />
           <Route path="/resume" element={<Resume />} />
           <Route path="/communities" element={<Communities />} />
+          <Route path="/meetings" element={<Meetings />} />
+          <Route path="/learning" element={<Learning />} />
           <Route path="/consultations" element={<Consultations />} />
           <Route path="/demo" element={<Demo />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
