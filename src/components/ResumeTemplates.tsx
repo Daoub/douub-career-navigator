@@ -1,124 +1,99 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Eye, Download, Share2, Heart, Star, Briefcase, GraduationCap, User } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  Search, 
+  Filter, 
+  Star, 
+  Download, 
+  Eye, 
+  Share2, 
+  Heart, 
+  Crown,
+  CheckCircle,
+  FileText,
+  Palette,
+  Sparkles,
+  Shield,
+  Briefcase,
+  Users,
+  TrendingUp,
+  Zap,
+  Settings,
+  Copy,
+  Maximize2,
+  Play
+} from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useToast } from '@/hooks/use-toast';
+import { resumeTemplates, templateCategories } from '@/data/resumeTemplates';
+import type { ResumeTemplate } from '@/data/resumeTemplates';
 
-interface ResumeTemplate {
-  id: string;
-  name: string;
-  nameEn: string;
-  category: 'modern' | 'classic' | 'creative' | 'executive';
-  preview: string;
-  features: string[];
-  rating: number;
-  downloads: number;
-  premium: boolean;
-}
 
 interface ResumeTemplatesProps {
   onSelectTemplate: (templateId: string) => void;
-  selectedTemplate?: string;
+  selectedTemplate: string;
 }
 
-const ResumeTemplates: React.FC<ResumeTemplatesProps> = ({ 
-  onSelectTemplate, 
-  selectedTemplate 
+const ResumeTemplates: React.FC<ResumeTemplatesProps> = ({
+  onSelectTemplate,
+  selectedTemplate
 }) => {
   const { t, language } = useTranslation();
   const { toast } = useToast();
+  
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<'rating' | 'downloads' | 'newest'>('rating');
+  const [showPremiumOnly, setShowPremiumOnly] = useState(false);
+  const [showSaudiOnly, setShowSaudiOnly] = useState(false);
   const [favorites, setFavorites] = useState<string[]>([]);
+  const [previewTemplate, setPreviewTemplate] = useState<ResumeTemplate | null>(null);
 
-  // Professional Saudi Vision 2030 aligned templates
-  const templates: ResumeTemplate[] = [
-    {
-      id: 'vision-professional',
-      name: 'رؤية 2030 المهنية',
-      nameEn: 'Vision 2030 Professional',
-      category: 'modern',
-      preview: '/api/template-preview/vision-professional.jpg',
-      features: ['متوافق مع رؤية 2030', 'تصميم حديث', 'مُحسن للطباعة', 'مناسب للشركات الكبيرة'],
-      rating: 4.9,
-      downloads: 12500,
-      premium: false
-    },
-    {
-      id: 'neom-executive',
-      name: 'نيوم التنفيذي',
-      nameEn: 'NEOM Executive',
-      category: 'executive',
-      preview: '/api/template-preview/neom-executive.jpg',
-      features: ['للمناصب التنفيذية', 'تصميم أنيق', 'مساحة للإنجازات', 'متوافق مع ATS'],
-      rating: 4.8,
-      downloads: 8900,
-      premium: true
-    },
-    {
-      id: 'saudi-modern',
-      name: 'السعودية الحديثة',
-      nameEn: 'Saudi Modern',
-      category: 'modern',
-      preview: '/api/template-preview/saudi-modern.jpg',
-      features: ['عصري ومميز', 'ألوان احترافية', 'سهل التخصيص', 'متعدد الصفحات'],
-      rating: 4.7,
-      downloads: 15200,
-      premium: false
-    },
-    {
-      id: 'tech-innovator',
-      name: 'مبتكر التقنية',
-      nameEn: 'Tech Innovator',
-      category: 'creative',
-      preview: '/api/template-preview/tech-innovator.jpg',
-      features: ['للوظائف التقنية', 'تصميم إبداعي', 'مساحة للمشاريع', 'روابط GitHub'],
-      rating: 4.6,
-      downloads: 9800,
-      premium: true
-    },
-    {
-      id: 'classic-saudi',
-      name: 'الكلاسيكي السعودي',
-      nameEn: 'Classic Saudi',
-      category: 'classic',
-      preview: '/api/template-preview/classic-saudi.jpg',
-      features: ['تصميم تقليدي', 'مناسب لجميع المجالات', 'بسيط وواضح', 'سهل القراءة'],
-      rating: 4.5,
-      downloads: 20100,
-      premium: false
-    },
-    {
-      id: 'healthcare-pro',
-      name: 'المهني الطبي',
-      nameEn: 'Healthcare Professional',
-      category: 'modern',
-      preview: '/api/template-preview/healthcare-pro.jpg',
-      features: ['للمجال الطبي', 'مساحة للشهادات', 'تصميم موثوق', 'متوافق مع معايير الصحة'],
-      rating: 4.8,
-      downloads: 7400,
-      premium: true
-    }
-  ];
+  const filteredTemplates = useMemo(() => {
+    let filtered = resumeTemplates.filter(template => {
+      const matchesSearch = template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          template.nameAr.includes(searchQuery) ||
+                          template.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          template.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+      
+      const matchesCategory = selectedCategory === 'all' || template.category === selectedCategory;
+      const matchesPremium = !showPremiumOnly || template.premium;
+      const matchesSaudi = !showSaudiOnly || template.saudiCompliant;
+      
+      return matchesSearch && matchesCategory && matchesPremium && matchesSaudi;
+    });
+
+    // Sort templates
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'rating':
+          return b.rating - a.rating;
+        case 'downloads':
+          return b.downloads - a.downloads;
+        case 'newest':
+          return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+        default:
+          return 0;
+      }
+    });
+
+    return filtered;
+  }, [searchQuery, selectedCategory, sortBy, showPremiumOnly, showSaudiOnly]);
 
   const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case 'modern': return <Star className="h-4 w-4" />;
-      case 'classic': return <User className="h-4 w-4" />;
-      case 'creative': return <Briefcase className="h-4 w-4" />;
-      case 'executive': return <GraduationCap className="h-4 w-4" />;
-      default: return <Star className="h-4 w-4" />;
-    }
-  };
-
-  const getCategoryName = (category: string) => {
-    const categories = {
-      modern: language === 'ar' ? 'حديث' : 'Modern',
-      classic: language === 'ar' ? 'كلاسيكي' : 'Classic',
-      creative: language === 'ar' ? 'إبداعي' : 'Creative',
-      executive: language === 'ar' ? 'تنفيذي' : 'Executive'
+    const icons = {
+      'traditional': FileText,
+      'modern': Sparkles,
+      'creative': Palette,
+      'saudi': Shield,
+      'professional': Briefcase
     };
-    return categories[category as keyof typeof categories] || category;
+    return icons[category as keyof typeof icons] || FileText;
   };
 
   const toggleFavorite = (templateId: string) => {
@@ -129,189 +104,351 @@ const ResumeTemplates: React.FC<ResumeTemplatesProps> = ({
     );
   };
 
-  const previewTemplate = (template: ResumeTemplate) => {
+  const handlePreview = (template: ResumeTemplate) => {
+    setPreviewTemplate(template);
     toast({
       title: language === 'ar' ? 'معاينة القالب' : 'Template Preview',
       description: language === 'ar' 
-        ? `سيتم فتح معاينة قالب ${template.name}` 
-        : `Opening preview for ${template.nameEn}`,
+        ? `فتح معاينة لقالب ${template.nameAr}`
+        : `Opening preview for ${template.name}`,
     });
-    // Open preview modal or new window
   };
 
-  const shareTemplate = (template: ResumeTemplate) => {
-    navigator.clipboard.writeText(`https://doaub.app/templates/${template.id}`);
+  const handleShare = async (template: ResumeTemplate) => {
+    try {
+      await navigator.clipboard.writeText(`${window.location.origin}/templates/${template.id}`);
+      toast({
+        title: language === 'ar' ? 'تم النسخ' : 'Copied',
+        description: language === 'ar' 
+          ? 'تم نسخ رابط القالب إلى الحافظة'
+          : 'Template link copied to clipboard',
+      });
+    } catch (error) {
+      toast({
+        title: language === 'ar' ? 'خطأ' : 'Error',
+        description: language === 'ar' 
+          ? 'فشل في نسخ الرابط'
+          : 'Failed to copy link',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const handleCustomize = (template: ResumeTemplate) => {
+    onSelectTemplate(template.id);
     toast({
-      title: language === 'ar' ? 'تم النسخ' : 'Copied',
-      description: language === 'ar' ? 'تم نسخ رابط القالب' : 'Template link copied to clipboard',
+      title: language === 'ar' ? 'تم تحديد القالب' : 'Template Selected',
+      description: language === 'ar' 
+        ? `تم تحديد قالب ${template.nameAr} للتخصيص`
+        : `Selected ${template.name} for customization`,
+    });
+  };
+
+  const handleUseTemplate = (template: ResumeTemplate) => {
+    onSelectTemplate(template.id);
+    toast({
+      title: language === 'ar' ? 'تم استخدام القالب' : 'Template Applied',
+      description: language === 'ar' 
+        ? `تم تطبيق قالب ${template.nameAr}`
+        : `Applied ${template.name} template`,
     });
   };
 
   return (
     <div className="space-y-6">
-      <div className="text-center">
-        <h2 className="text-hero gradient-text-hero mb-4">
-          {t('resume.templates')}
-        </h2>
-        <p className="text-muted-foreground max-w-2xl mx-auto">
-          {language === 'ar' 
-            ? 'اختر من مجموعة متنوعة من القوالب المصممة خصيصاً للسوق السعودي ومتوافقة مع رؤية 2030'
-            : 'Choose from a variety of templates designed specifically for the Saudi market and aligned with Vision 2030'
-          }
-        </p>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-hero gradient-text-hero">
+            {language === 'ar' ? 'قوالب السيرة الذاتية' : 'Resume Templates'}
+          </h2>
+          <p className="text-muted-foreground">
+            {language === 'ar' 
+              ? 'اختر من مجموعة متنوعة من القوالب المهنية'
+              : 'Choose from a variety of professional templates'
+            }
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Badge variant="secondary" className="flex items-center gap-1">
+            <TrendingUp className="h-3 w-3" />
+            {filteredTemplates.length} {language === 'ar' ? 'قالب' : 'templates'}
+          </Badge>
+        </div>
       </div>
 
-      {/* Template Categories Filter */}
-      <div className="flex flex-wrap gap-2 justify-center">
-        {['modern', 'classic', 'creative', 'executive'].map(category => (
-          <Button
-            key={category}
-            variant="outline"
-            size="sm"
-            className="flex items-center gap-2"
-          >
-            {getCategoryIcon(category)}
-            {getCategoryName(category)}
-          </Button>
-        ))}
-      </div>
+      {/* Search and Filters */}
+      <Card className="card-vision">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Filter className="h-5 w-5 text-primary" />
+            {language === 'ar' ? 'البحث والفلترة' : 'Search & Filter'}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder={language === 'ar' ? 'البحث في القوالب...' : 'Search templates...'}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger>
+                <SelectValue placeholder={language === 'ar' ? 'الفئة' : 'Category'} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">
+                  {language === 'ar' ? 'جميع الفئات' : 'All Categories'}
+                </SelectItem>
+                {templateCategories.map(category => (
+                  <SelectItem key={category.id} value={category.id}>
+                    {language === 'ar' ? category.nameAr : category.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={sortBy} onValueChange={(value: 'rating' | 'downloads' | 'newest') => setSortBy(value)}>
+              <SelectTrigger>
+                <SelectValue placeholder={language === 'ar' ? 'الترتيب' : 'Sort by'} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="rating">
+                  {language === 'ar' ? 'التقييم' : 'Rating'}
+                </SelectItem>
+                <SelectItem value="downloads">
+                  {language === 'ar' ? 'التحميلات' : 'Downloads'}
+                </SelectItem>
+                <SelectItem value="newest">
+                  {language === 'ar' ? 'الأحدث' : 'Newest'}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+
+            <div className="flex gap-2">
+              <Button
+                variant={showPremiumOnly ? "default" : "outline"}
+                size="sm"
+                onClick={() => setShowPremiumOnly(!showPremiumOnly)}
+                className="flex items-center gap-1"
+              >
+                <Crown className="h-4 w-4" />
+                {language === 'ar' ? 'مميز' : 'Premium'}
+              </Button>
+              <Button
+                variant={showSaudiOnly ? "default" : "outline"}
+                size="sm"
+                onClick={() => setShowSaudiOnly(!showSaudiOnly)}
+                className="flex items-center gap-1"
+              >
+                <Shield className="h-4 w-4" />
+                {language === 'ar' ? 'سعودي' : 'Saudi'}
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Templates Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {templates.map(template => (
-          <Card 
-            key={template.id} 
-            className={`card-vision group cursor-pointer transition-all duration-300 ${
-              selectedTemplate === template.id ? 'ring-2 ring-primary' : ''
-            }`}
-            onClick={() => onSelectTemplate(template.id)}
-          >
-            <CardHeader className="pb-2">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <CardTitle className="text-base mb-1">
-                    {language === 'ar' ? template.name : template.nameEn}
-                  </CardTitle>
-                  <div className="flex items-center gap-2 mb-2">
-                    <Badge variant="secondary" className="text-xs">
-                      {getCategoryIcon(template.category)}
-                      <span className="ml-1">{getCategoryName(template.category)}</span>
+      <Tabs value="gallery" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="gallery" className="flex items-center gap-2">
+            <Briefcase className="h-4 w-4" />
+            {language === 'ar' ? 'معرض القوالب' : 'Template Gallery'}
+          </TabsTrigger>
+          <TabsTrigger value="favorites" className="flex items-center gap-2">
+            <Heart className="h-4 w-4" />
+            {language === 'ar' ? 'المفضلة' : 'Favorites'}
+          </TabsTrigger>
+          <TabsTrigger value="recent" className="flex items-center gap-2">
+            <Zap className="h-4 w-4" />
+            {language === 'ar' ? 'المستخدمة مؤخراً' : 'Recently Used'}
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="gallery">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredTemplates.map((template) => (
+              <Card key={template.id} className={`card-vision relative group ${selectedTemplate === template.id ? 'ring-2 ring-primary' : ''}`}>
+                <div className="absolute top-2 right-2 z-10 flex gap-1">
+                  {template.premium && (
+                    <Badge variant="default" className="bg-gradient-primary">
+                      <Crown className="h-3 w-3 mr-1" />
+                      {language === 'ar' ? 'مميز' : 'Premium'}
                     </Badge>
-                    {template.premium && (
-                      <Badge className="text-xs bg-gradient-secondary">
-                        {language === 'ar' ? 'مميز' : 'Premium'}
+                  )}
+                  {template.saudiCompliant && (
+                    <Badge variant="outline" className="border-primary">
+                      <Shield className="h-3 w-3 mr-1" />
+                      {language === 'ar' ? 'سعودي' : 'Saudi'}
+                    </Badge>
+                  )}
+                </div>
+
+                <div className="absolute top-2 left-2 z-10">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => toggleFavorite(template.id)}
+                    className="bg-background/80 backdrop-blur-sm"
+                  >
+                    <Heart className={`h-4 w-4 ${favorites.includes(template.id) ? 'fill-red-500 text-red-500' : ''}`} />
+                  </Button>
+                </div>
+
+                <CardHeader className="pb-2">
+                  <div className="aspect-video bg-gradient-to-br from-primary/10 to-secondary/10 rounded-lg mb-4 relative overflow-hidden">
+                    <img
+                      src={template.preview}
+                      alt={template.name}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handlePreview(template)}
+                          className="bg-background/80 backdrop-blur-sm"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleShare(template)}
+                          className="bg-background/80 backdrop-blur-sm"
+                        >
+                          <Share2 className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleCustomize(template)}
+                          className="bg-background/80 backdrop-blur-sm"
+                        >
+                          <Settings className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg">
+                      {language === 'ar' ? template.nameAr : template.name}
+                    </CardTitle>
+                    <div className="flex items-center gap-1">
+                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      <span className="text-sm font-medium">{template.rating}</span>
+                    </div>
+                  </div>
+                  
+                  <CardDescription className="text-sm">
+                    {language === 'ar' ? template.descriptionAr : template.description}
+                  </CardDescription>
+                </CardHeader>
+
+                <CardContent className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    {React.createElement(getCategoryIcon(template.category), { className: "h-4 w-4 text-primary" })}
+                    <span className="text-sm capitalize">{template.category}</span>
+                    <Badge variant="outline" className="ml-auto">
+                      <Download className="h-3 w-3 mr-1" />
+                      {template.downloads.toLocaleString()}
+                    </Badge>
+                  </div>
+
+                  <div className="flex flex-wrap gap-1">
+                    {template.tags.slice(0, 3).map(tag => (
+                      <Badge key={tag} variant="secondary" className="text-xs">
+                        {tag}
+                      </Badge>
+                    ))}
+                    {template.tags.length > 3 && (
+                      <Badge variant="secondary" className="text-xs">
+                        +{template.tags.length - 3}
                       </Badge>
                     )}
                   </div>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleFavorite(template.id);
-                  }}
-                  className="p-1 h-auto"
-                >
-                  <Heart 
-                    className={`h-4 w-4 ${
-                      favorites.includes(template.id) 
-                        ? 'fill-red-500 text-red-500' 
-                        : 'text-gray-400'
-                    }`} 
-                  />
-                </Button>
-              </div>
-            </CardHeader>
 
-            <CardContent className="space-y-4">
-              {/* Template Preview */}
-              <div className="aspect-[3/4] bg-gradient-to-br from-muted/30 to-muted/60 rounded-lg border-2 border-dashed border-muted-foreground/20 flex items-center justify-center group-hover:shadow-vision-md transition-shadow">
-                <div className="text-center text-muted-foreground">
-                  <Eye className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">{language === 'ar' ? 'معاينة القالب' : 'Template Preview'}</p>
-                </div>
-              </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleCustomize(template)}
+                      className="flex-1"
+                    >
+                      <Settings className="h-4 w-4 mr-2" />
+                      {language === 'ar' ? 'تخصيص' : 'Customize'}
+                    </Button>
+                    <Button
+                      onClick={() => handleUseTemplate(template)}
+                      className="flex-1 bg-gradient-primary btn-gradient-hover"
+                    >
+                      <Play className="h-4 w-4 mr-2" />
+                      {language === 'ar' ? 'استخدام' : 'Use'}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
 
-              {/* Template Stats */}
-              <div className="flex items-center justify-between text-sm text-muted-foreground">
-                <div className="flex items-center gap-1">
-                  <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                  <span>{template.rating}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Download className="h-3 w-3" />
-                  <span>{template.downloads.toLocaleString()}</span>
-                </div>
-              </div>
-
-              {/* Template Features */}
-              <div className="space-y-1">
-                {template.features.slice(0, 3).map((feature, index) => (
-                  <p key={index} className="text-xs text-muted-foreground flex items-center gap-1">
-                    <span className="w-1 h-1 bg-primary rounded-full"></span>
-                    {feature}
+        <TabsContent value="favorites">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredTemplates.filter(template => favorites.includes(template.id)).map((template) => (
+              <Card key={template.id} className="card-vision">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Heart className="h-5 w-5 fill-red-500 text-red-500" />
+                    {language === 'ar' ? template.nameAr : template.name}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">
+                    {language === 'ar' ? template.descriptionAr : template.description}
                   </p>
-                ))}
-              </div>
-
-              {/* Action Buttons */}
-              <div className="grid grid-cols-2 gap-2 pt-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    previewTemplate(template);
-                  }}
-                  className="flex items-center gap-1"
-                >
-                  <Eye className="h-3 w-3" />
-                  <span className="text-xs">{language === 'ar' ? 'معاينة' : 'Preview'}</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    shareTemplate(template);
-                  }}
-                  className="flex items-center gap-1"
-                >
-                  <Share2 className="h-3 w-3" />
-                  <span className="text-xs">{language === 'ar' ? 'مشاركة' : 'Share'}</span>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Selected Template Actions */}
-      {selectedTemplate && (
-        <Card className="bg-gradient-primary text-primary-foreground">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="font-medium mb-1">
-                  {language === 'ar' ? 'القالب المحدد' : 'Selected Template'}
-                </h4>
-                <p className="text-sm opacity-90">
-                  {templates.find(t => t.id === selectedTemplate)?.[language === 'ar' ? 'name' : 'nameEn']}
+                </CardContent>
+              </Card>
+            ))}
+            {favorites.length === 0 && (
+              <div className="col-span-full text-center py-12">
+                <Heart className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-muted-foreground">
+                  {language === 'ar' ? 'لا توجد قوالب مفضلة' : 'No favorite templates'}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  {language === 'ar' 
+                    ? 'انقر على أيقونة القلب لإضافة قوالب إلى المفضلة'
+                    : 'Click the heart icon to add templates to favorites'
+                  }
                 </p>
               </div>
-              <div className="flex gap-2">
-                <Button variant="secondary" size="sm">
-                  {language === 'ar' ? 'تخصيص' : 'Customize'}
-                </Button>
-                <Button variant="secondary" size="sm">
-                  {language === 'ar' ? 'استخدام' : 'Use Template'}
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+            )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="recent">
+          <div className="text-center py-12">
+            <Zap className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-muted-foreground">
+              {language === 'ar' ? 'لا توجد قوالب مستخدمة مؤخراً' : 'No recently used templates'}
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              {language === 'ar' 
+                ? 'القوالب التي تستخدمها ستظهر هنا'
+                : 'Templates you use will appear here'
+              }
+            </p>
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

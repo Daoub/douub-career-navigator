@@ -4,24 +4,20 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { Upload, Brain, CheckCircle, AlertTriangle, X, Zap } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Upload, Brain, CheckCircle, AlertTriangle, X, Zap, Shield, TrendingUp, Target, Award, BarChart3 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from '@/hooks/useTranslation';
+import { sampleAnalysisResult } from '@/data/aiAnalysisData';
+import type { AIAnalysisResult } from '@/data/aiAnalysisData';
 
-interface AnalysisResult {
-  score: number;
-  strengths: string[];
-  weaknesses: string[];
-  suggestions: string[];
-  keywords: string[];
-  formatIssues: string[];
-  competitiveness: 'low' | 'medium' | 'high';
-}
 
 const ResumeAnalyzer: React.FC = () => {
   const [resumeText, setResumeText] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<AIAnalysisResult | null>(null);
   const { toast } = useToast();
+  const { t, language } = useTranslation();
 
   const analyzeResume = async () => {
     if (!resumeText.trim()) {
@@ -35,44 +31,16 @@ const ResumeAnalyzer: React.FC = () => {
 
     setIsAnalyzing(true);
 
-    // Simulate AI analysis with realistic results
+    // Simulate AI analysis with comprehensive results
     setTimeout(() => {
-      const result: AnalysisResult = {
-        score: 75,
-        strengths: [
-          "خبرة واضحة في تطوير البرمجيات",
-          "تنوع في المهارات التقنية",
-          "خبرة في أدوات حديثة مثل React و Node.js",
-          "تعليم أكاديمي قوي",
-          "شهادات مهنية معتمدة"
-        ],
-        weaknesses: [
-          "عدم وجود أرقام محددة للإنجازات",
-          "نقص في الكلمات المفتاحية المطلوبة",
-          "لا توجد مشاريع شخصية مذكورة",
-          "الملخص المهني قصير جداً"
-        ],
-        suggestions: [
-          "أضف أرقام محددة لإنجازاتك (مثل: زيادة الأداء بنسبة 30%)",
-          "ضمّن كلمات مفتاحية أكثر من مجال عملك",
-          "أضف مشاريع شخصية أو مساهمات مفتوحة المصدر",
-          "وسّع الملخص المهني ليشمل أهدافك وقيمتك المضافة",
-          "أضف روابط لحسابك على LinkedIn أو GitHub"
-        ],
-        keywords: ["React", "Node.js", "JavaScript", "تطوير البرمجيات", "بكالوريوس"],
-        formatIssues: [
-          "استخدم خط موحد في جميع أنحاء السيرة الذاتية",
-          "أضف مساحات بيضاء أكثر بين الأقسام"
-        ],
-        competitiveness: 'medium'
-      };
-
-      setAnalysisResult(result);
+      setAnalysisResult(sampleAnalysisResult);
       setIsAnalyzing(false);
 
       toast({
-        title: "تم التحليل بنجاح",
-        description: "تم تحليل سيرتك الذاتية بواسطة الذكاء الاصطناعي",
+        title: language === 'ar' ? 'تم التحليل بنجاح' : 'Analysis Complete',
+        description: language === 'ar' 
+          ? 'تم تحليل سيرتك الذاتية بواسطة الذكاء الاصطناعي'
+          : 'Your resume has been analyzed by AI',
       });
     }, 3000);
   };
