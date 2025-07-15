@@ -30,6 +30,7 @@ import ResumeBuilder from '@/components/ResumeBuilder';
 import BilingualResumeBuilder from '@/components/BilingualResumeBuilder';
 import ResumeTemplates from '@/components/ResumeTemplates';
 import ResumeExporter from '@/components/ResumeExporter';
+import ResumePreview from '@/components/ResumePreview';
 import LanguageSelector from '@/components/LanguageSelector';
 import { useTranslation } from '@/hooks/useTranslation';
 
@@ -225,6 +226,16 @@ const Resume = () => {
             {/* Analysis Tab */}
             <TabsContent value="analysis">
               <ResumeAnalyzer />
+            </TabsContent>
+
+            {/* Preview Tab */}
+            <TabsContent value="preview">
+              <ResumePreview 
+                resumeData={resumeData}
+                selectedTemplate="vision-professional"
+                onExport={(format) => console.log('Export format:', format)}
+                onShare={() => console.log('Share resume')}
+              />
             </TabsContent>
           </Tabs>
         </div>
