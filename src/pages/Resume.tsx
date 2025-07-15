@@ -229,6 +229,8 @@ const Resume = () => {
           </Tabs>
         </div>
       </div>
-
+    </div>
+  );
+};
 
 export default Resume;

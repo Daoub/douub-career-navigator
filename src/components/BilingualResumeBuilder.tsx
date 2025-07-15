@@ -10,10 +10,9 @@ import {
   Languages, 
   Globe, 
   Copy, 
-  Translate, 
   CheckCircle,
   AlertCircle,
-  Sync,
+  RefreshCw,
   Eye
 } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -247,7 +246,7 @@ const BilingualResumeBuilder: React.FC<BilingualResumeBuilderProps> = ({
                 onClick={() => setSyncMode(!syncMode)}
                 className="flex items-center gap-2"
               >
-                <Sync className={`h-4 w-4 ${syncMode ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`h-4 w-4 ${syncMode ? 'animate-spin' : ''}`} />
                 {language === 'ar' ? 'ترجمة تلقائية' : 'Auto Translate'}
               </Button>
               <Button
@@ -379,7 +378,7 @@ const BilingualResumeBuilder: React.FC<BilingualResumeBuilderProps> = ({
                           onClick={() => autoTranslate('name', bilingualData[activeLanguage].name)}
                           className="h-6 px-2"
                         >
-                          <Translate className="h-3 w-3" />
+                          <Languages className="h-3 w-3" />
                         </Button>
                       </div>
                     </div>
@@ -408,7 +407,7 @@ const BilingualResumeBuilder: React.FC<BilingualResumeBuilderProps> = ({
                           onClick={() => autoTranslate('summary', bilingualData[activeLanguage].summary)}
                           className="h-6 px-2"
                         >
-                          <Translate className="h-3 w-3" />
+                          <Languages className="h-3 w-3" />
                         </Button>
                       </div>
                     </div>
