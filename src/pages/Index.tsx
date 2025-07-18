@@ -15,7 +15,7 @@ const Index = () => {
     title: "Professional Resume Builder",
     titleAr: "انشاء السيرة الذاتية",
     description: "Design professional resumes with AI analysis and PDF export",
-    descriptionAr: "  المميزات : - نماذج احترافية - ⁠تعديل السيرة باي وقت - ⁠تصدير السيرة الذاتية بصيغة Word - PDF - ⁠مطابقة لمعايير ATS"
+    descriptionAr: "نماذج احترافية - ⁠تعديل السيرة باي وقت - ⁠تصدير السيرة الذاتية بصيغة Word - PDF - ⁠مطابقة لمعايير ATS"
   }, {
     icon: <Calendar className="h-8 w-8 text-purple-600" />,
     title: "Weekly Expert Sessions",
