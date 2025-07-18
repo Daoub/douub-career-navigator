@@ -42,8 +42,8 @@ const Index = () => {
     currency: "SAR",
     period: "month",
     periodAr: "شهر",
-    features: ["Job search and filtering", "Basic resume builder", "Community access", "Email support"],
-    featuresAr: ["البحث وتصفية الوظائف", "منشئ السيرة الذاتية الأساسي", "الوصول للمجتمعات", "الدعم عبر البريد الإلكتروني"],
+    features: [" Inventory and sort all posts posted on social media sites", "Create, edit and analyze resumes", "Download 3 business models", "Professional events", "Interview questions for one job"],
+    featuresAr: ["حصر وفرز جميع الوظايف المنشورة بمواقع التواصل الاجتماعي", " الأحداث المهنية", "إنشاء و تعديل و تحليل السيرة الذاتية", "تنزيل ٣ نماذج أعمال", "أسئلة المقابلات الشخصية لوظيفة واحدة"],
     popular: false
   }];
   return <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-emerald-50" dir="rtl">
