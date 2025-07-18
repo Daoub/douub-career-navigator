@@ -120,7 +120,7 @@ const Index = () => {
       <section id="features" className="py-20 px-4">
         <div className="container mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent py-[3px]">
               الميزات الأساسية
             </h2>
             <p className="text-xl text-gray-700 max-w-3xl mx-auto">
@@ -213,9 +213,7 @@ const Index = () => {
             <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">
               تواصل معنا
             </h2>
-            <p className="text-xl text-gray-700 max-w-3xl mx-auto">
-              نحن هنا لمساعدتك في تطوير مسيرتك المهنية
-            </p>
+            
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
