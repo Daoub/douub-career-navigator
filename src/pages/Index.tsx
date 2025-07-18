@@ -157,7 +157,7 @@ const Index = () => {
 
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto px-px">
             {subscriptionTiers.map((tier, index) => <Card key={index} className={`relative hover:shadow-xl transition-all duration-300 ${tier.popular ? 'scale-105 border-2 border-emerald-500 bg-gradient-to-br from-white to-emerald-50' : 'bg-white/80 backdrop-blur-sm'}`}>
                 {tier.popular && <div className="absolute -top-4 right-1/2 transform translate-x-1/2 bg-gradient-to-r from-emerald-600 to-blue-600 text-white px-6 py-2 rounded-full text-sm font-bold">
                     الأكثر شعبية
@@ -210,7 +210,7 @@ const Index = () => {
       <section id="contact" className="py-20 px-4 bg-white">
         <div className="container mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent py-[2px]">
               تواصل معنا
             </h2>
             
