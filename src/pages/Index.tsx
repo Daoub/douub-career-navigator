@@ -6,34 +6,34 @@ import Logo from '@/components/Logo';
 const Index = () => {
   const coreFeatures = [{
     icon: <Globe className="h-8 w-8 text-emerald-600" />,
-    title: "Find all jobs",
-    titleAr: "البحث عن جميع الوظائف",
-    description: "A service that provides an inventory and sorting of all jobs posted on all social media sites in the specified city and the specified specialization",
-    descriptionAr: "خدمة تقدم حصر وفرز جميع الوظائف المنشورة في جميع مواقع التواصل الاجتماعي بالمدينة المحددة والتخصص المحدد"
+    title: "Job Aggregation & Filtering",
+    titleAr: "تجميع وتصفية الوظائف",
+    description: "Collect and precisely sort jobs from various social media platforms",
+    descriptionAr: "جمع وترتيب الوظائف بدقة من منصات التواصل الاجتماعي المختلفة"
   }, {
     icon: <FileText className="h-8 w-8 text-blue-600" />,
-    title: "Resume Builder",
-    titleAr: "انشاء السيرة الذاتية",
-    description: "Professional templates - Edit resume at any time - Export resume in Word - PDF - ATS compliant - Analyze resume",
-    descriptionAr: "نماذج احترافية - ⁠تعديل السيرة باي وقت - ⁠تصدير السيرة الذاتية بصيغة Word - PDF - ⁠مطابقة لمعايير ATS - ⁠تحليل السيرة الذاتية "
+    title: "Professional Resume Builder",
+    titleAr: "منشئ السيرة الذاتية المهنية",
+    description: "Design professional resumes with AI analysis and PDF export",
+    descriptionAr: "تصميم سيرة ذاتية مهنية مع تحليل ذكي وتصدير PDF"
   }, {
     icon: <Calendar className="h-8 w-8 text-purple-600" />,
-    title: "Business models",
-    titleAr: "نماذج الأعمال",
-    description: "We provide business models that support you in your specialization in an open, downloadable Word, Excel, and PowerPoint format",
-    descriptionAr: "نوفر نماذج الأعمال الي تساندك في تخصصك بصيغة مفتوحة word - Excel - PowerPoint وقابلة للتنزيل. "
+    title: "Weekly Expert Sessions",
+    titleAr: "جلسات أسبوعية مع الخبراء",
+    description: "Weekly meetings and workshops with specialized consultants",
+    descriptionAr: "اجتماعات وورش عمل أسبوعية مع استشاريين متخصصين"
   }, {
     icon: <MessageCircle className="h-8 w-8 text-orange-600" />,
-    title: "Professional Events",
-    titleAr: "الأحداث المهنية",
-    description: "List all professional events in your specialty (courses, meetings, conferences, conferences, updates)",
-    descriptionAr: "حصر جميع الأحداث المهنية في تخصصك مثل (الدورات - اللقاءات - المؤتمرات - المستجدات) "
+    title: "Interview Preparation",
+    titleAr: "تحضير المقابلات",
+    description: "Remote mock interviews with field experts",
+    descriptionAr: "مقابلات تجريبية عن بُعد مع خبراء في المجال"
   }, {
     icon: <Briefcase className="h-8 w-8 text-red-600" />,
-    title: "Interview questions",
-    titleAr: "أسئلة المقابلات الشخصية",
-    description: "We provide you with interview questions for all job titles",
-    descriptionAr: "نوفر لك أسئلة الجهات في المقابلات الشخصية لكل المسميات الوظيفية"
+    title: "Business Consultation",
+    titleAr: "الاستشارات التجارية",
+    description: "Expert business consultations and guidance",
+    descriptionAr: "استشارات وإرشادات تجارية من الخبراء"
   }, {
     icon: <Users className="h-8 w-8 text-indigo-600" />,
     title: "Professional Communities",
@@ -156,18 +156,6 @@ const Index = () => {
           
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {coreFeatures.map((feature, index) => <Card key={index} className="hover:shadow-lg transition-all duration-300 hover:-translate-y-2 bg-white/80 backdrop-blur-sm border-0 shadow-md">
-                <CardHeader>
-                  <div className="flex items-center justify-between mb-4">
-                    {feature.icon}
-                    <Star className="h-5 w-5 text-yellow-500" />
-                  </div>
-                  <CardTitle className="text-xl font-bold text-gray-800 mb-2">
-                    {feature.titleAr}
-                  </CardTitle>
-                  <CardDescription className="text-gray-600 leading-relaxed">
-                    {feature.descriptionAr}
-                  </CardDescription>
-                </CardHeader>
               </Card>)}
           </div>
         </div>
