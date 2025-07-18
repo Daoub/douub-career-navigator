@@ -45,26 +45,6 @@ const Index = () => {
     features: ["Job search and filtering", "Basic resume builder", "Community access", "Email support"],
     featuresAr: ["البحث وتصفية الوظائف", "منشئ السيرة الذاتية الأساسي", "الوصول للمجتمعات", "الدعم عبر البريد الإلكتروني"],
     popular: false
-  }, {
-    name: "Professional",
-    nameAr: "مهني",
-    price: "50",
-    currency: "SAR",
-    period: "month",
-    periodAr: "شهر",
-    features: ["All Basic features", "AI resume analysis", "Weekly expert sessions", "Mock interviews", "Priority support"],
-    featuresAr: ["جميع الميزات الأساسية", "تحليل السيرة الذاتية بالذكاء الاصطناعي", "جلسات أسبوعية مع الخبراء", "مقابلات تجريبية", "دعم أولوية"],
-    popular: true
-  }, {
-    name: "Enterprise",
-    nameAr: "مؤسسي",
-    price: "125",
-    currency: "SAR",
-    period: "month",
-    periodAr: "شهر",
-    features: ["All Professional features", "Business consultation", "Resume distribution service", "Custom business models", "24/7 premium support"],
-    featuresAr: ["جميع الميزات المهنية", "الاستشارات التجارية", "خدمة توزيع السيرة الذاتية", "نماذج أعمال مخصصة", "دعم مميز على مدار الساعة"],
-    popular: false
   }];
   return <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-emerald-50" dir="rtl">
       {/* Header */}
