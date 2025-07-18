@@ -1,9 +1,9 @@
+
 import React from 'react';
 import { ArrowRight, Users, FileText, Calendar, MessageCircle, Briefcase, Globe, Star, CheckCircle, Phone, Mail, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Logo from '@/components/Logo';
-import Navbar from '@/components/Navbar';
 
 const Index = () => {
   const coreFeatures = [{
@@ -51,9 +51,6 @@ const Index = () => {
   }];
 
   return <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-emerald-50" dir="rtl">
-      {/* Header */}
-      <Navbar />
-
       {/* Hero Section */}
       <section className="py-20 px-4">
         <div className="container mx-auto text-center">
