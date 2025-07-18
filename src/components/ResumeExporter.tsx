@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Download, Share2, Link2, Mail, MessageSquare, FileText, Image, Globe } from 'lucide-react';
+import { Download, Share2, Link2, Mail, MessageSquare, FileText, Globe, Eye, AlertCircle } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useToast } from '@/hooks/use-toast';
 import { exportService, ExportOptions, ResumeData } from '@/services/exportService';
@@ -49,10 +49,49 @@ const ResumeExporter: React.FC<ResumeExporterProps> = ({
   const [isSharing, setIsSharing] = useState(false);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
 
+  const validateResumeData = (): string | null => {
+    if (!resumeData.personalInfo?.name) {
+      return language === 'ar' ? 'يجب إدخال الاسم أولاً' : 'Name is required';
+    }
+    
+    if (!resumeData.experience?.length && !resumeData.education?.length && !resumeData.skills?.length) {
+      return language === 'ar' ? 'يجب إضافة محتوى للسيرة الذاتية (خبرة، تعليم، أو مهارات)' : 'Resume must have content (experience, education, or skills)';
+    }
+    
+    return null;
+  };
+
   const handleExport = async () => {
+    // Validate resume data first
+    const validationError = validateResumeData();
+    if (validationError) {
+      toast({
+        title: language === 'ar' ? 'خطأ في البيانات' : 'Data Error',
+        description: validationError,
+        variant: 'destructive'
+      });
+      return;
+    }
+
     setIsExporting(true);
     
     try {
+      // Check if preview is visible for PDF export
+      if (exportOptions.format === 'pdf') {
+        const previewElement = document.querySelector('[data-resume-preview]');
+        if (!previewElement) {
+          toast({
+            title: language === 'ar' ? 'المعاينة مطلوبة' : 'Preview Required',
+            description: language === 'ar' 
+              ? 'يرجى الانتقال إلى تبويب المعاينة أولاً لتصدير PDF'
+              : 'Please go to the Preview tab first to export PDF',
+            variant: 'destructive'
+          });
+          setIsExporting(false);
+          return;
+        }
+      }
+
       await exportService.exportResume(resumeData, exportOptions);
       
       toast({
@@ -67,7 +106,7 @@ const ResumeExporter: React.FC<ResumeExporterProps> = ({
       console.error('Export error:', error);
       toast({
         title: language === 'ar' ? 'خطأ في التصدير' : 'Export Error',
-        description: language === 'ar' ? 'حدث خطأ أثناء تصدير السيرة الذاتية' : 'An error occurred while exporting the resume',
+        description: error instanceof Error ? error.message : (language === 'ar' ? 'حدث خطأ أثناء تصدير السيرة الذاتية' : 'An error occurred while exporting the resume'),
         variant: 'destructive'
       });
     } finally {
@@ -132,8 +171,22 @@ const ResumeExporter: React.FC<ResumeExporterProps> = ({
     }
   };
 
+  const validationError = validateResumeData();
+
   return (
     <div className="space-y-6">
+      {/* Data Validation Warning */}
+      {validationError && (
+        <Card className="border-orange-200 bg-orange-50">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 text-orange-700">
+              <AlertCircle className="h-4 w-4" />
+              <p className="text-sm font-medium">{validationError}</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Export Section */}
       <Card className="card-vision">
         <CardHeader>
@@ -220,10 +273,23 @@ const ResumeExporter: React.FC<ResumeExporterProps> = ({
             </div>
           </div>
 
+          {/* PDF Export Warning */}
+          {exportOptions.format === 'pdf' && (
+            <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-700 text-sm">
+              <Eye className="h-4 w-4" />
+              <span>
+                {language === 'ar' 
+                  ? 'للحصول على أفضل جودة PDF، تأكد من أن المعاينة مرئية قبل التصدير'
+                  : 'For best PDF quality, ensure the preview is visible before exporting'
+                }
+              </span>
+            </div>
+          )}
+
           {/* Export Button */}
           <Button 
             onClick={handleExport}
-            disabled={isExporting}
+            disabled={isExporting || !!validationError}
             className="w-full bg-gradient-primary btn-gradient-hover"
           >
             {isExporting ? (
@@ -328,7 +394,7 @@ const ResumeExporter: React.FC<ResumeExporterProps> = ({
           {/* Share Button */}
           <Button 
             onClick={handleShare}
-            disabled={isSharing}
+            disabled={isSharing || !!validationError}
             className="w-full bg-gradient-secondary text-secondary-foreground btn-gradient-hover"
           >
             {isSharing ? (
