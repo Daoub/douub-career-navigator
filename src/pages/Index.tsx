@@ -34,12 +34,6 @@ const Index = () => {
     titleAr: "أسئلة المقابلات الشخصية",
     description: "We provide you with interview questions for all job titles",
     descriptionAr: "نوفر لك أسئلة الجهات في المقابلات الشخصية لكل المسميات الوظيفية"
-  }, {
-    icon: <Users className="h-8 w-8 text-indigo-600" />,
-    title: "Professional Communities",
-    titleAr: "المجتمعات المهنية",
-    description: "Networking and peer interaction platforms",
-    descriptionAr: "منصات التواصل والتفاعل مع الأقران"
   }];
   const subscriptionTiers = [{
     name: "Basic",
