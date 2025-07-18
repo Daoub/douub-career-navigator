@@ -36,6 +36,64 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useToast } from '@/hooks/use-toast';
 import { ResumeData, ExportOptions } from '@/services/exportService';
 
+// BilingualData interface for the bilingual resume builder
+interface BilingualData {
+  ar: {
+    name: string;
+    summary: string;
+    experience: Array<{
+      title: string;
+      company: string;
+      description: string;
+    }>;
+    education: Array<{
+      degree: string;
+      institution: string;
+    }>;
+    skills: string[];
+  };
+  en: {
+    name: string;
+    summary: string;
+    experience: Array<{
+      title: string;
+      company: string;
+      description: string;
+    }>;
+    education: Array<{
+      degree: string;
+      institution: string;
+    }>;
+    skills: string[];
+  };
+}
+
+// Convert BilingualData to ResumeData based on current language
+const convertBilingualToResumeData = (bilingualData: BilingualData, currentLanguage: 'ar' | 'en'): ResumeData => {
+  const data = bilingualData[currentLanguage];
+  return {
+    personalInfo: {
+      name: data.name,
+      summary: data.summary,
+    },
+    experience: data.experience.map(exp => ({
+      title: exp.title,
+      company: exp.company,
+      description: exp.description,
+      startDate: '',
+      current: true,
+    })),
+    education: data.education.map(edu => ({
+      degree: edu.degree,
+      institution: edu.institution,
+      startDate: '',
+      endDate: '',
+    })),
+    skills: data.skills.map(skill => ({ name: skill, level: 'intermediate' as const })),
+    certificates: [],
+  };
+};
+
 const Resume = () => {
   const navigate = useNavigate();
   const { t, language } = useTranslation();
@@ -228,14 +286,15 @@ const Resume = () => {
               {builderMode === 'bilingual' ? (
                 <BilingualResumeBuilder 
                   onSave={(data) => {
-                    setResumeData(data as ResumeData);
+                    setResumeData(convertBilingualToResumeData(data, language as 'ar' | 'en'));
                     toast({
                       title: language === 'ar' ? 'تم الحفظ' : 'Saved',
                       description: language === 'ar' ? 'تم حفظ السيرة الذاتية بنجاح' : 'Resume saved successfully'
                     });
                   }}
                   onPreview={(data, lang) => {
-                    setResumeData(data as ResumeData);
+                    const previewLanguage = (lang === 'both' || !lang) ? language as 'ar' | 'en' : lang;
+                    setResumeData(convertBilingualToResumeData(data, previewLanguage));
                     setActiveTab('preview');
                   }}
                 />
