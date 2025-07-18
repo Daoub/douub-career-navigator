@@ -68,7 +68,9 @@ export class PDFExportService {
   }
 
   private async prepareResumeForCapture(resumeData: ResumeData, options: ExportOptions): Promise<HTMLElement> {
-    const isArabic = options.language === 'ar';
+    // Handle "both" language case - default to English for PDF export
+    const pdfLanguage = options.language === 'both' ? 'en' : options.language;
+    const isArabic = pdfLanguage === 'ar';
     
     // Ensure Arabic fonts are loaded
     if (isArabic) {
@@ -79,7 +81,7 @@ export class PDFExportService {
     const htmlContent = pdfTemplateService.generateProfessionalTemplate(
       resumeData, 
       options.template, 
-      options.language
+      pdfLanguage
     );
 
     // Create a temporary container for PDF generation
@@ -106,8 +108,11 @@ export class PDFExportService {
   }
 
   async exportToPDF(resumeData: ResumeData, options: ExportOptions): Promise<void> {
+    // Handle "both" language case - default to English for PDF export
+    const pdfLanguage = options.language === 'both' ? 'en' : options.language;
+    
     // Validate resume data first
-    const validation = resumeValidationService.validateResumeData(resumeData, options.language);
+    const validation = resumeValidationService.validateResumeData(resumeData, pdfLanguage);
     if (!validation.isValid) {
       throw new Error(validation.errors.join(', '));
     }
@@ -115,7 +120,7 @@ export class PDFExportService {
     let tempContainer: HTMLElement | null = null;
     
     try {
-      const isArabic = options.language === 'ar';
+      const isArabic = pdfLanguage === 'ar';
       
       // Prepare the resume content for capture
       tempContainer = await this.prepareResumeForCapture(resumeData, options);
