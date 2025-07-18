@@ -152,11 +152,9 @@ const Index = () => {
         <div className="container mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">
-              باقات الاشتراك
+              باقة الاشتراك
             </h2>
-            <p className="text-xl text-gray-700 max-w-3xl mx-auto">
-              اختر الباقة التي تناسب احتياجاتك المهنية
-            </p>
+
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
