@@ -29,6 +29,10 @@ import {
 } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useToast } from '@/hooks/use-toast';
+import { skillCategories, getAllSkills, getAllSkills_Ar, searchSkills, searchSkills_Ar } from '@/data/commonSkills';
+import { saudiCities } from '@/data/saudiCities';
+import { jobCategories } from '@/data/jobCategories';
+import { Course, Certificate as CoursesCertificate, saudiCertificationProviders, internationalCertificationProviders } from '@/data/courses';
 
 interface PersonalInfo {
   name: string;
@@ -37,7 +41,6 @@ interface PersonalInfo {
   location: string;
   summary: string;
   linkedIn?: string;
-  website?: string;
   nationality?: string;
   dateOfBirth?: string;
   maritalStatus?: string;
@@ -71,7 +74,7 @@ interface Skill {
   id: string;
   name: string;
   level: 'beginner' | 'intermediate' | 'advanced' | 'expert';
-  category: 'technical' | 'soft' | 'language';
+  category: 'technical' | 'business' | 'communication' | 'creative' | 'languages' | 'industry-specific';
 }
 
 interface Certificate {
@@ -90,6 +93,7 @@ interface ResumeData {
   education: Education[];
   skills: Skill[];
   certificates: Certificate[];
+  courses: any[];
   projects?: any[];
   languages?: any[];
   template: string;
@@ -122,7 +126,6 @@ const ResumeBuilder: React.FC<ResumeBuilderProps> = ({
       location: '',
       summary: '',
       linkedIn: '',
-      website: '',
       nationality: '',
       dateOfBirth: '',
       maritalStatus: ''
@@ -131,6 +134,7 @@ const ResumeBuilder: React.FC<ResumeBuilderProps> = ({
     education: [],
     skills: [],
     certificates: [],
+    courses: [],
     template: 'vision-professional',
     lastModified: new Date(),
     ...initialData
@@ -305,6 +309,39 @@ const ResumeBuilder: React.FC<ResumeBuilderProps> = ({
     }));
   };
 
+  const addCourse = () => {
+    const newCourse = {
+      id: Date.now().toString(),
+      title: '',
+      titleAr: '',
+      provider: '',
+      providerAr: '',
+      date: '',
+      skills: [],
+      certificate: false
+    };
+    setResumeData(prev => ({
+      ...prev,
+      courses: [...prev.courses, newCourse]
+    }));
+  };
+
+  const updateCourse = (id: string, field: string, value: any) => {
+    setResumeData(prev => ({
+      ...prev,
+      courses: prev.courses.map(course => 
+        course.id === id ? { ...course, [field]: value } : course
+      )
+    }));
+  };
+
+  const removeCourse = (id: string) => {
+    setResumeData(prev => ({
+      ...prev,
+      courses: prev.courses.filter(course => course.id !== id)
+    }));
+  };
+
   const getSkillLevelBadge = (level: Skill['level']) => {
     const levels = {
       beginner: { label: language === 'ar' ? 'مبتدئ' : 'Beginner', variant: 'secondary' as const },
@@ -374,7 +411,7 @@ const ResumeBuilder: React.FC<ResumeBuilderProps> = ({
         {/* Resume Builder Tabs */}
         <div className="lg:col-span-3">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="grid w-full grid-cols-6">
               <TabsTrigger value="personal" className="flex items-center gap-2">
                 <User className="h-4 w-4" />
                 <span className="hidden sm:inline">{t('resume.personal_info')}</span>
@@ -390,6 +427,10 @@ const ResumeBuilder: React.FC<ResumeBuilderProps> = ({
               <TabsTrigger value="skills" className="flex items-center gap-2">
                 <Award className="h-4 w-4" />
                 <span className="hidden sm:inline">{t('resume.skills')}</span>
+              </TabsTrigger>
+              <TabsTrigger value="courses" className="flex items-center gap-2">
+                <GraduationCap className="h-4 w-4" />
+                <span className="hidden sm:inline">{language === 'ar' ? 'الدورات' : 'Courses'}</span>
               </TabsTrigger>
               <TabsTrigger value="certificates" className="flex items-center gap-2">
                 <FileText className="h-4 w-4" />
@@ -481,15 +522,15 @@ const ResumeBuilder: React.FC<ResumeBuilderProps> = ({
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="website">{language === 'ar' ? 'الموقع الشخصي' : 'Personal Website'}</Label>
+                      <Label htmlFor="nationality">{language === 'ar' ? 'الجنسية' : 'Nationality'}</Label>
                       <Input
-                        id="website"
-                        value={resumeData.personalInfo.website || ''}
+                        id="nationality"
+                        value={resumeData.personalInfo.nationality || ''}
                         onChange={(e) => setResumeData(prev => ({
                           ...prev,
-                          personalInfo: { ...prev.personalInfo, website: e.target.value }
+                          personalInfo: { ...prev.personalInfo, nationality: e.target.value }
                         }))}
-                        placeholder="www.yourwebsite.com"
+                        placeholder={language === 'ar' ? 'السعودية' : 'Saudi Arabia'}
                       />
                     </div>
                   </div>
@@ -796,9 +837,11 @@ const ResumeBuilder: React.FC<ResumeBuilderProps> = ({
                             <SelectValue placeholder={language === 'ar' ? 'الفئة' : 'Category'} />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="technical">{language === 'ar' ? 'تقنية' : 'Technical'}</SelectItem>
-                            <SelectItem value="soft">{language === 'ar' ? 'شخصية' : 'Soft Skills'}</SelectItem>
-                            <SelectItem value="language">{language === 'ar' ? 'لغوية' : 'Language'}</SelectItem>
+                            {skillCategories.map(category => (
+                              <SelectItem key={category.id} value={category.id}>
+                                {language === 'ar' ? category.nameAr : category.name}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                         <Button
@@ -829,20 +872,14 @@ const ResumeBuilder: React.FC<ResumeBuilderProps> = ({
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {['technical', 'soft', 'language'].map(category => {
-                        const categorySkills = resumeData.skills.filter(skill => skill.category === category);
+                      {skillCategories.map(category => {
+                        const categorySkills = resumeData.skills.filter(skill => skill.category === category.id);
                         if (categorySkills.length === 0) return null;
 
-                        const categoryNames = {
-                          technical: language === 'ar' ? 'المهارات التقنية' : 'Technical Skills',
-                          soft: language === 'ar' ? 'المهارات الشخصية' : 'Soft Skills',
-                          language: language === 'ar' ? 'المهارات اللغوية' : 'Language Skills'
-                        };
-
                         return (
-                          <div key={category}>
+                          <div key={category.id}>
                             <h4 className="font-medium text-foreground mb-3">
-                              {categoryNames[category as keyof typeof categoryNames]}
+                              {language === 'ar' ? category.nameAr : category.name}
                             </h4>
                             <div className="flex flex-wrap gap-2">
                               {categorySkills.map(skill => {
@@ -869,6 +906,128 @@ const ResumeBuilder: React.FC<ResumeBuilderProps> = ({
                         );
                       })}
                     </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Courses Tab */}
+            <TabsContent value="courses">
+              <Card className="card-vision">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        <GraduationCap className="h-5 w-5 text-primary" />
+                        {language === 'ar' ? 'الدورات التدريبية' : 'Training Courses'}
+                      </CardTitle>
+                      <CardDescription>
+                        {language === 'ar' 
+                          ? 'أضف الدورات التدريبية والبرامج التعليمية التي أكملتها'
+                          : 'Add training courses and educational programs you have completed'
+                        }
+                      </CardDescription>
+                    </div>
+                    <Button onClick={addCourse} className="flex items-center gap-2">
+                      <Plus className="h-4 w-4" />
+                      {language === 'ar' ? 'إضافة دورة' : 'Add Course'}
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {resumeData.courses.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <GraduationCap className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                      <p>{language === 'ar' ? 'لم تتم إضافة أي دورة تدريبية بعد' : 'No courses added yet'}</p>
+                      <Button onClick={addCourse} variant="outline" className="mt-3">
+                        {language === 'ar' ? 'إضافة أول دورة' : 'Add First Course'}
+                      </Button>
+                    </div>
+                  ) : (
+                    resumeData.courses.map((course) => (
+                      <Card key={course.id} className="border border-border">
+                        <CardContent className="p-4 space-y-4">
+                          <div className="flex items-center justify-between">
+                            <h4 className="font-medium text-foreground">
+                              {(language === 'ar' ? course.titleAr : course.title) || (language === 'ar' ? 'دورة تدريبية جديدة' : 'New Course')}
+                            </h4>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeCourse(course.id)}
+                              className="text-destructive hover:text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label>{language === 'ar' ? 'اسم الدورة (بالعربية)' : 'Course Name (Arabic)'}</Label>
+                              <Input
+                                value={course.titleAr}
+                                onChange={(e) => updateCourse(course.id, 'titleAr', e.target.value)}
+                                placeholder={language === 'ar' ? 'دورة تطوير مواقع الويب' : 'Web Development Course'}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>{language === 'ar' ? 'اسم الدورة (بالإنجليزية)' : 'Course Name (English)'}</Label>
+                              <Input
+                                value={course.title}
+                                onChange={(e) => updateCourse(course.id, 'title', e.target.value)}
+                                placeholder="Web Development Course"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>{language === 'ar' ? 'مقدم الدورة (بالعربية)' : 'Provider (Arabic)'}</Label>
+                              <Input
+                                value={course.providerAr}
+                                onChange={(e) => updateCourse(course.id, 'providerAr', e.target.value)}
+                                placeholder={language === 'ar' ? 'معهد التدريب المتقدم' : 'Advanced Training Institute'}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>{language === 'ar' ? 'مقدم الدورة (بالإنجليزية)' : 'Provider (English)'}</Label>
+                              <Input
+                                value={course.provider}
+                                onChange={(e) => updateCourse(course.id, 'provider', e.target.value)}
+                                placeholder="Advanced Training Institute"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>{language === 'ar' ? 'تاريخ الإكمال' : 'Completion Date'}</Label>
+                              <Input
+                                type="month"
+                                value={course.date}
+                                onChange={(e) => updateCourse(course.id, 'date', e.target.value)}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>{language === 'ar' ? 'عدد الساعات' : 'Hours'}</Label>
+                              <Input
+                                type="number"
+                                value={course.hours || ''}
+                                onChange={(e) => updateCourse(course.id, 'hours', parseInt(e.target.value))}
+                                placeholder="40"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-3">
+                            <input
+                              type="checkbox"
+                              id={`certificate-${course.id}`}
+                              checked={course.certificate || false}
+                              onChange={(e) => updateCourse(course.id, 'certificate', e.target.checked)}
+                              className="rounded border-border"
+                            />
+                            <Label htmlFor={`certificate-${course.id}`}>
+                              {language === 'ar' ? 'حصلت على شهادة إتمام' : 'Received completion certificate'}
+                            </Label>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))
                   )}
                 </CardContent>
               </Card>
