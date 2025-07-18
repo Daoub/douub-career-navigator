@@ -2,131 +2,139 @@
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { ResumeData, ExportOptions } from './exportService';
+import { pdfTemplateService } from './pdfTemplateService';
+import { arabicFontService } from './arabicFontService';
+import { resumeValidationService } from './resumeValidationService';
 
 export class PDFExportService {
   private getQualitySettings(quality: string) {
+    const baseSettings = {
+      useCORS: true,
+      allowTaint: false,
+      backgroundColor: '#ffffff',
+      foreignObjectRendering: true,
+      logging: false,
+      removeContainer: true,
+      imageTimeout: 15000,
+      windowWidth: 1200,
+      windowHeight: 1697
+    };
+
     switch (quality) {
       case 'high':
         return { 
-          scale: 2, 
-          useCORS: true, 
-          allowTaint: false,
-          backgroundColor: '#ffffff',
-          foreignObjectRendering: true
+          ...baseSettings,
+          scale: 2.5,
+          width: 2480,
+          height: 3508
         };
       case 'print':
         return { 
-          scale: 3, 
-          useCORS: true, 
-          allowTaint: false,
-          backgroundColor: '#ffffff',
-          foreignObjectRendering: true
+          ...baseSettings,
+          scale: 3.5,
+          width: 2480,
+          height: 3508
         };
       default:
         return { 
-          scale: 1.5, 
-          useCORS: true, 
-          allowTaint: false,
-          backgroundColor: '#ffffff',
-          foreignObjectRendering: true
+          ...baseSettings,
+          scale: 2,
+          width: 1754,
+          height: 2480
         };
     }
   }
 
-  private async waitForFontsToLoad(): Promise<void> {
-    // Wait for fonts to load before capturing
+  private async waitForContentToLoad(): Promise<void> {
+    // Wait for fonts to load
     if ('fonts' in document) {
       await document.fonts.ready;
     }
-    // Additional wait to ensure all content is rendered
-    return new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Wait for images to load
+    const images = document.querySelectorAll('img');
+    const imagePromises = Array.from(images).map(img => {
+      if (img.complete) return Promise.resolve();
+      return new Promise(resolve => {
+        img.onload = resolve;
+        img.onerror = resolve;
+      });
+    });
+    
+    await Promise.all(imagePromises);
+    
+    // Additional wait for rendering
+    await new Promise(resolve => setTimeout(resolve, 1500));
   }
 
-  private ensureArabicFonts(isArabic: boolean): void {
+  private async prepareResumeForCapture(resumeData: ResumeData, options: ExportOptions): Promise<HTMLElement> {
+    const isArabic = options.language === 'ar';
+    
+    // Ensure Arabic fonts are loaded
     if (isArabic) {
-      // Inject Arabic font CSS if not already present
-      const fontId = 'arabic-font-injection';
-      if (!document.getElementById(fontId)) {
-        const style = document.createElement('style');
-        style.id = fontId;
-        style.textContent = `
-          @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;600;700&display=swap');
-          [data-resume-preview] * {
-            font-family: 'Noto Sans Arabic', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
-          }
-        `;
-        document.head.appendChild(style);
-      }
+      await arabicFontService.ensureArabicFontsLoaded();
     }
+
+    // Generate professional HTML template
+    const htmlContent = pdfTemplateService.generateProfessionalTemplate(
+      resumeData, 
+      options.template, 
+      options.language
+    );
+
+    // Create a temporary container for PDF generation
+    const tempContainer = document.createElement('div');
+    tempContainer.id = 'pdf-generation-container';
+    tempContainer.style.cssText = `
+      position: absolute;
+      top: -9999px;
+      left: -9999px;
+      width: 210mm;
+      height: auto;
+      background: white;
+      overflow: visible;
+      z-index: -1000;
+    `;
+    
+    tempContainer.innerHTML = htmlContent;
+    document.body.appendChild(tempContainer);
+
+    // Wait for content to load and render
+    await this.waitForContentToLoad();
+
+    return tempContainer;
   }
 
   async exportToPDF(resumeData: ResumeData, options: ExportOptions): Promise<void> {
+    // Validate resume data first
+    const validation = resumeValidationService.validateResumeData(resumeData, options.language);
+    if (!validation.isValid) {
+      throw new Error(validation.errors.join(', '));
+    }
+
+    let tempContainer: HTMLElement | null = null;
+    
     try {
       const isArabic = options.language === 'ar';
       
-      // Ensure Arabic fonts are loaded
-      this.ensureArabicFonts(isArabic);
-      
-      // Wait for fonts and rendering
-      await this.waitForFontsToLoad();
+      // Prepare the resume content for capture
+      tempContainer = await this.prepareResumeForCapture(resumeData, options);
       
       const pdf = new jsPDF('p', 'mm', 'a4');
       const qualitySettings = this.getQualitySettings(options.quality);
       
-      // Find the resume preview element
-      const element = document.querySelector('[data-resume-preview]') as HTMLElement;
-      if (!element) {
-        throw new Error('Resume preview element not found. Please ensure the preview is visible.');
-      }
-
-      // Ensure element is visible and has content
-      if (element.offsetHeight === 0 || element.offsetWidth === 0) {
-        throw new Error('Resume preview element is not visible. Please switch to the preview tab first.');
-      }
-
-      // Temporarily enhance the element for better PDF capture
-      const originalStyle = element.style.cssText;
-      element.style.transform = 'scale(1)';
-      element.style.transformOrigin = 'top left';
-      element.style.width = '210mm';
-      element.style.backgroundColor = '#ffffff';
-      
-      // Add temporary Arabic text rendering improvements
-      if (isArabic) {
-        element.style.direction = 'rtl';
-        element.style.textAlign = 'right';
-      }
-
-      // Capture the element as canvas with enhanced settings
-      const canvas = await html2canvas(element, {
-        ...qualitySettings,
-        width: element.scrollWidth,
-        height: element.scrollHeight,
-        windowWidth: 1200,
-        windowHeight: 1600,
-        onclone: (clonedDoc) => {
-          const clonedElement = clonedDoc.querySelector('[data-resume-preview]') as HTMLElement;
-          if (clonedElement && isArabic) {
-            // Enhance Arabic text rendering in cloned document
-            clonedElement.style.fontFamily = "'Noto Sans Arabic', Arial, sans-serif";
-            clonedElement.style.direction = 'rtl';
-            clonedElement.style.unicodeBidi = 'bidi-override';
-          }
-        }
-      });
-
-      // Restore original styles
-      element.style.cssText = originalStyle;
+      // Capture the temporary container as canvas
+      const canvas = await html2canvas(tempContainer, qualitySettings);
 
       if (canvas.width === 0 || canvas.height === 0) {
-        throw new Error('Failed to capture resume content. The preview may be empty.');
+        throw new Error(isArabic ? 'فشل في التقاط محتوى السيرة الذاتية' : 'Failed to capture resume content');
       }
 
       const imgData = canvas.toDataURL('image/png', 1.0);
       
       // Calculate dimensions for A4 page
       const imgWidth = 210; // A4 width in mm
-      const pageHeight = 295; // A4 height in mm  
+      const pageHeight = 297; // A4 height in mm  
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
       let heightLeft = imgHeight;
       let position = 0;
@@ -157,9 +165,9 @@ export class PDFExportService {
 
       // Generate filename with proper characters
       const safeName = resumeData.personalInfo.name
-        ?.replace(/[^\w\s-]/g, '') // Remove special characters
+        ?.replace(/[^\w\s\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF-]/g, '') // Keep Arabic characters
         ?.replace(/\s+/g, '_') // Replace spaces with underscores
-        || 'Resume';
+        || (isArabic ? 'السيرة_الذاتية' : 'Resume');
       
       const fileName = `${safeName}_${options.language}_${new Date().toISOString().split('T')[0]}.pdf`;
       
@@ -168,7 +176,16 @@ export class PDFExportService {
       
     } catch (error) {
       console.error('PDF export error:', error);
-      throw new Error(`Failed to export PDF: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      const isArabic = options.language === 'ar';
+      throw new Error(isArabic ? 
+        `فشل في تصدير PDF: ${error instanceof Error ? error.message : 'خطأ غير معروف'}` :
+        `Failed to export PDF: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    } finally {
+      // Clean up temporary container
+      if (tempContainer && tempContainer.parentNode) {
+        tempContainer.parentNode.removeChild(tempContainer);
+      }
     }
   }
 }

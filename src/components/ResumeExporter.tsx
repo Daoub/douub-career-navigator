@@ -1,15 +1,15 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Download, Share2, Link2, Mail, MessageSquare, FileText, Globe, Eye, AlertCircle } from 'lucide-react';
+import { Download, Share2, Link2, Mail, MessageSquare, FileText, Globe, Eye, AlertCircle, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useToast } from '@/hooks/use-toast';
 import { exportService, ExportOptions, ResumeData } from '@/services/exportService';
+import { resumeValidationService, ValidationResult } from '@/services/resumeValidationService';
 
 interface ShareOptions {
   method: 'link' | 'email' | 'whatsapp' | 'linkedin';
@@ -48,26 +48,19 @@ const ResumeExporter: React.FC<ResumeExporterProps> = ({
   const [isExporting, setIsExporting] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [validation, setValidation] = useState<ValidationResult | null>(null);
 
-  const validateResumeData = (): string | null => {
-    if (!resumeData.personalInfo?.name) {
-      return language === 'ar' ? 'يجب إدخال الاسم أولاً' : 'Name is required';
-    }
-    
-    if (!resumeData.experience?.length && !resumeData.education?.length && !resumeData.skills?.length) {
-      return language === 'ar' ? 'يجب إضافة محتوى للسيرة الذاتية (خبرة، تعليم، أو مهارات)' : 'Resume must have content (experience, education, or skills)';
-    }
-    
-    return null;
-  };
+  // Validate resume data whenever it changes
+  useEffect(() => {
+    const validationResult = resumeValidationService.validateResumeData(resumeData, language as 'ar' | 'en');
+    setValidation(validationResult);
+  }, [resumeData, language]);
 
   const handleExport = async () => {
-    // Validate resume data first
-    const validationError = validateResumeData();
-    if (validationError) {
+    if (!validation?.isValid) {
       toast({
         title: language === 'ar' ? 'خطأ في البيانات' : 'Data Error',
-        description: validationError,
+        description: validation?.errors.join(', ') || (language === 'ar' ? 'بيانات غير صالحة' : 'Invalid data'),
         variant: 'destructive'
       });
       return;
@@ -76,22 +69,6 @@ const ResumeExporter: React.FC<ResumeExporterProps> = ({
     setIsExporting(true);
     
     try {
-      // Check if preview is visible for PDF export
-      if (exportOptions.format === 'pdf') {
-        const previewElement = document.querySelector('[data-resume-preview]');
-        if (!previewElement) {
-          toast({
-            title: language === 'ar' ? 'المعاينة مطلوبة' : 'Preview Required',
-            description: language === 'ar' 
-              ? 'يرجى الانتقال إلى تبويب المعاينة أولاً لتصدير PDF'
-              : 'Please go to the Preview tab first to export PDF',
-            variant: 'destructive'
-          });
-          setIsExporting(false);
-          return;
-        }
-      }
-
       await exportService.exportResume(resumeData, exportOptions);
       
       toast({
@@ -171,21 +148,87 @@ const ResumeExporter: React.FC<ResumeExporterProps> = ({
     }
   };
 
-  const validationError = validateResumeData();
+  const ValidationStatusCard = () => {
+    if (!validation) return null;
+
+    const getStatusIcon = () => {
+      if (validation.isValid) {
+        return <CheckCircle className="h-5 w-5 text-green-500" />;
+      } else if (validation.errors.length > 0) {
+        return <XCircle className="h-5 w-5 text-red-500" />;
+      } else {
+        return <Clock className="h-5 w-5 text-yellow-500" />;
+      }
+    };
+
+    const getStatusColor = () => {
+      if (validation.isValid) return 'border-green-200 bg-green-50';
+      if (validation.errors.length > 0) return 'border-red-200 bg-red-50';
+      return 'border-yellow-200 bg-yellow-50';
+    };
+
+    return (
+      <Card className={`${getStatusColor()}`}>
+        <CardContent className="pt-6">
+          <div className="flex items-start gap-3">
+            {getStatusIcon()}
+            <div className="flex-1 space-y-2">
+              <div className="flex items-center justify-between">
+                <h4 className="font-medium">
+                  {resumeValidationService.generateValidationSummary(validation, language as 'ar' | 'en')}
+                </h4>
+                <Badge variant="outline">
+                  {validation.completeness}%
+                </Badge>
+              </div>
+              
+              {validation.errors.length > 0 && (
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-red-700">
+                    {language === 'ar' ? 'أخطاء يجب إصلاحها:' : 'Errors to fix:'}
+                  </p>
+                  <ul className="text-sm text-red-600 space-y-1">
+                    {validation.errors.map((error, index) => (
+                      <li key={index} className="flex items-center gap-2">
+                        <span className="w-1 h-1 bg-red-500 rounded-full"></span>
+                        {error}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              
+              {validation.warnings.length > 0 && (
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-yellow-700">
+                    {language === 'ar' ? 'اقتراحات للتحسين:' : 'Suggestions for improvement:'}
+                  </p>
+                  <ul className="text-sm text-yellow-600 space-y-1">
+                    {validation.warnings.slice(0, 3).map((warning, index) => (
+                      <li key={index} className="flex items-center gap-2">
+                        <span className="w-1 h-1 bg-yellow-500 rounded-full"></span>
+                        {warning}
+                      </li>
+                    ))}
+                    {validation.warnings.length > 3 && (
+                      <li className="text-xs text-muted-foreground">
+                        {language === 'ar' ? `و ${validation.warnings.length - 3} اقتراحات أخرى...` : `and ${validation.warnings.length - 3} more suggestions...`}
+                      </li>
+                    )}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
 
   return (
     <div className="space-y-6">
-      {/* Data Validation Warning */}
-      {validationError && (
-        <Card className="border-orange-200 bg-orange-50">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2 text-orange-700">
-              <AlertCircle className="h-4 w-4" />
-              <p className="text-sm font-medium">{validationError}</p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {/* Validation Status */}
+      <ValidationStatusCard />
 
       {/* Export Section */}
       <Card className="card-vision">
@@ -243,13 +286,13 @@ const ResumeExporter: React.FC<ResumeExporterProps> = ({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="standard">
-                    {language === 'ar' ? 'قياسية' : 'Standard'}
+                    {language === 'ar' ? 'قياسية (سريع)' : 'Standard (Fast)'}
                   </SelectItem>
                   <SelectItem value="high">
-                    {language === 'ar' ? 'عالية' : 'High Quality'}
+                    {language === 'ar' ? 'عالية (موصى بها)' : 'High (Recommended)'}
                   </SelectItem>
                   <SelectItem value="print">
-                    {language === 'ar' ? 'جودة طباعة' : 'Print Quality'}
+                    {language === 'ar' ? 'جودة طباعة (أبطأ)' : 'Print Quality (Slower)'}
                   </SelectItem>
                 </SelectContent>
               </Select>
@@ -273,24 +316,30 @@ const ResumeExporter: React.FC<ResumeExporterProps> = ({
             </div>
           </div>
 
-          {/* PDF Export Warning */}
+          {/* Enhanced PDF Export Info */}
           {exportOptions.format === 'pdf' && (
-            <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-700 text-sm">
-              <Eye className="h-4 w-4" />
-              <span>
-                {language === 'ar' 
-                  ? 'للحصول على أفضل جودة PDF، تأكد من أن المعاينة مرئية قبل التصدير'
-                  : 'For best PDF quality, ensure the preview is visible before exporting'
-                }
-              </span>
+            <div className="flex items-start gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg text-blue-700 text-sm">
+              <Eye className="h-5 w-5 mt-0.5 flex-shrink-0" />
+              <div className="space-y-1">
+                <p className="font-medium">
+                  {language === 'ar' ? 'تحسينات جودة PDF الجديدة:' : 'New PDF Quality Improvements:'}
+                </p>
+                <ul className="space-y-1 text-blue-600">
+                  <li>• {language === 'ar' ? 'دعم محسن للخطوط العربية' : 'Enhanced Arabic font support'}</li>
+                  <li>• {language === 'ar' ? 'قوالب مهنية مُحسنة' : 'Improved professional templates'}</li>
+                  <li>• {language === 'ar' ? 'جودة صورة عالية' : 'High image quality'}</li>
+                  <li>• {language === 'ar' ? 'تخطيط مُحسن للطباعة' : 'Optimized print layout'}</li>
+                </ul>
+              </div>
             </div>
           )}
 
           {/* Export Button */}
           <Button 
             onClick={handleExport}
-            disabled={isExporting || !!validationError}
+            disabled={isExporting || !validation?.isValid}
             className="w-full bg-gradient-primary btn-gradient-hover"
+            size="lg"
           >
             {isExporting ? (
               <>
@@ -394,7 +443,7 @@ const ResumeExporter: React.FC<ResumeExporterProps> = ({
           {/* Share Button */}
           <Button 
             onClick={handleShare}
-            disabled={isSharing || !!validationError}
+            disabled={isSharing || !validation?.isValid}
             className="w-full bg-gradient-secondary text-secondary-foreground btn-gradient-hover"
           >
             {isSharing ? (

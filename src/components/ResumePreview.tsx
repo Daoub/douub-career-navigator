@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,18 +10,18 @@ import {
   Share2, 
   ZoomIn, 
   ZoomOut, 
-  RotateCw, 
   Printer,
   Smartphone,
   Tablet,
   Monitor,
-  FileText,
-  Globe,
-  Languages
+  Languages,
+  RefreshCw
 } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useToast } from '@/hooks/use-toast';
 import { exportService, ResumeData } from '@/services/exportService';
+import { pdfTemplateService } from '@/services/pdfTemplateService';
+import { arabicFontService } from '@/services/arabicFontService';
 
 interface ResumePreviewProps {
   resumeData: ResumeData;
@@ -41,8 +41,9 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({
   const [zoom, setZoom] = useState(100);
   const [viewMode, setViewMode] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
   const [previewLanguage, setPreviewLanguage] = useState<'ar' | 'en'>('ar');
-  const [showGrid, setShowGrid] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [previewHtml, setPreviewHtml] = useState<string>('');
 
   const templates = {
     'vision-professional': {
@@ -72,6 +73,39 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({
   };
 
   const currentTemplate = templates[selectedTemplate as keyof typeof templates] || templates['vision-professional'];
+
+  // Generate preview HTML whenever data or settings change
+  useEffect(() => {
+    generatePreviewHtml();
+  }, [resumeData, selectedTemplate, previewLanguage]);
+
+  const generatePreviewHtml = async () => {
+    try {
+      setIsRefreshing(true);
+      
+      // Load Arabic fonts if needed
+      if (previewLanguage === 'ar') {
+        await arabicFontService.ensureArabicFontsLoaded();
+      }
+      
+      const html = pdfTemplateService.generateProfessionalTemplate(
+        resumeData,
+        selectedTemplate,
+        previewLanguage
+      );
+      
+      setPreviewHtml(html);
+    } catch (error) {
+      console.error('Error generating preview:', error);
+      toast({
+        title: language === 'ar' ? 'خطأ في المعاينة' : 'Preview Error',
+        description: language === 'ar' ? 'حدث خطأ أثناء تحديث المعاينة' : 'An error occurred while updating the preview',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const handleZoomIn = () => setZoom(prev => Math.min(prev + 10, 200));
   const handleZoomOut = () => setZoom(prev => Math.max(prev - 10, 50));
@@ -132,9 +166,19 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({
               <Eye className="h-5 w-5 text-primary" />
               {language === 'ar' ? 'معاينة السيرة الذاتية' : 'Resume Preview'}
             </CardTitle>
-            <Badge variant="outline">
-              {currentTemplate.name}
-            </Badge>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline">
+                {currentTemplate.name}
+              </Badge>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={generatePreviewHtml}
+                disabled={isRefreshing}
+              >
+                <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -205,215 +249,37 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({
         </CardContent>
       </Card>
 
-      {/* Preview Container */}
+      {/* Enhanced Preview Container */}
       <div className="flex justify-center">
         <div className={`${getViewModeWidth()} transition-all duration-300`}>
           <div 
             data-resume-preview="true"
-            className="bg-white shadow-2xl rounded-lg overflow-hidden border-2 border-gray-200"
+            className="bg-white shadow-2xl rounded-lg overflow-hidden border-2 border-gray-200 print:shadow-none print:border-none"
             style={{ 
               transform: `scale(${zoom / 100})`,
               transformOrigin: 'top center'
             }}
           >
-            {/* Resume Content */}
+            {/* Professional Resume Content */}
             <div 
-              className="p-8 min-h-[1122px]"
+              className="resume-content print:p-0"
+              dangerouslySetInnerHTML={{ __html: previewHtml }}
               style={{
-                background: 'white',
-                color: '#1f2937',
-                direction: previewLanguage === 'ar' ? 'rtl' : 'ltr'
+                minHeight: '297mm',
+                width: '210mm',
+                maxWidth: '100%'
               }}
-            >
-              {/* Header Section */}
-              <div className="mb-8">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex-1">
-                    <h1 
-                      className="text-4xl font-bold mb-2"
-                      style={{ color: currentTemplate.colors.primary }}
-                    >
-                      {resumeData.personalInfo?.name || (previewLanguage === 'ar' ? 'اسم المتقدم' : 'Applicant Name')}
-                    </h1>
-                    <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-                      {resumeData.personalInfo?.email && (
-                        <span className="flex items-center gap-1">
-                          <span>📧</span>
-                          {resumeData.personalInfo.email}
-                        </span>
-                      )}
-                      {resumeData.personalInfo?.phone && (
-                        <span className="flex items-center gap-1">
-                          <span>📱</span>
-                          {resumeData.personalInfo.phone}
-                        </span>
-                      )}
-                      {resumeData.personalInfo?.location && (
-                        <span className="flex items-center gap-1">
-                          <span>📍</span>
-                          {resumeData.personalInfo.location}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center">
-                    <span className="text-gray-500 text-xs">
-                      {previewLanguage === 'ar' ? 'صورة' : 'Photo'}
-                    </span>
-                  </div>
+            />
+            
+            {/* Loading overlay */}
+            {isRefreshing && (
+              <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
+                <div className="flex items-center gap-2 text-gray-600">
+                  <RefreshCw className="h-4 w-4 animate-spin" />
+                  <span>{language === 'ar' ? 'جاري التحديث...' : 'Updating...'}</span>
                 </div>
-
-                {/* Professional Summary */}
-                {resumeData.personalInfo?.summary && (
-                  <div className="mb-6">
-                    <h2 
-                      className="text-xl font-semibold mb-3 pb-2 border-b-2"
-                      style={{ borderColor: currentTemplate.colors.primary }}
-                    >
-                      {previewLanguage === 'ar' ? 'الملخص المهني' : 'Professional Summary'}
-                    </h2>
-                    <p className="text-gray-700 leading-relaxed">
-                      {resumeData.personalInfo.summary}
-                    </p>
-                  </div>
-                )}
               </div>
-
-              {/* Experience Section */}
-              {resumeData.experience && resumeData.experience.length > 0 && (
-                <div className="mb-8">
-                  <h2 
-                    className="text-xl font-semibold mb-4 pb-2 border-b-2"
-                    style={{ borderColor: currentTemplate.colors.primary }}
-                  >
-                    {previewLanguage === 'ar' ? 'الخبرة المهنية' : 'Professional Experience'}
-                  </h2>
-                  <div className="space-y-4">
-                    {resumeData.experience.map((exp: any, index: number) => (
-                      <div key={index} className="mb-4">
-                        <div className="flex justify-between items-start mb-2">
-                          <div>
-                            <h3 className="font-semibold text-lg" style={{ color: currentTemplate.colors.secondary }}>
-                              {exp.title || (previewLanguage === 'ar' ? 'المسمى الوظيفي' : 'Job Title')}
-                            </h3>
-                            <p className="text-gray-600">
-                              {exp.company || (previewLanguage === 'ar' ? 'اسم الشركة' : 'Company Name')}
-                            </p>
-                          </div>
-                          <div className="text-right text-sm text-gray-500">
-                            <p>{exp.startDate} - {exp.current ? (previewLanguage === 'ar' ? 'حالياً' : 'Present') : exp.endDate}</p>
-                            {exp.location && <p>{exp.location}</p>}
-                          </div>
-                        </div>
-                        {exp.description && (
-                          <p className="text-gray-700 mb-2">{exp.description}</p>
-                        )}
-                        {exp.achievements && exp.achievements.length > 0 && (
-                          <ul className="list-disc list-inside text-gray-700 space-y-1">
-                            {exp.achievements.map((achievement: string, i: number) => (
-                              <li key={i}>{achievement}</li>
-                            ))}
-                          </ul>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Education Section */}
-              {resumeData.education && resumeData.education.length > 0 && (
-                <div className="mb-8">
-                  <h2 
-                    className="text-xl font-semibold mb-4 pb-2 border-b-2"
-                    style={{ borderColor: currentTemplate.colors.primary }}
-                  >
-                    {previewLanguage === 'ar' ? 'التعليم' : 'Education'}
-                  </h2>
-                  <div className="space-y-4">
-                    {resumeData.education.map((edu: any, index: number) => (
-                      <div key={index} className="mb-4">
-                        <div className="flex justify-between items-start mb-2">
-                          <div>
-                            <h3 className="font-semibold text-lg" style={{ color: currentTemplate.colors.secondary }}>
-                              {edu.degree || (previewLanguage === 'ar' ? 'الدرجة العلمية' : 'Degree')}
-                            </h3>
-                            <p className="text-gray-600">
-                              {edu.institution || (previewLanguage === 'ar' ? 'اسم الجامعة' : 'Institution')}
-                            </p>
-                          </div>
-                          <div className="text-right text-sm text-gray-500">
-                            <p>{edu.startDate} - {edu.endDate}</p>
-                            {edu.gpa && <p>GPA: {edu.gpa}</p>}
-                          </div>
-                        </div>
-                        {edu.description && (
-                          <p className="text-gray-700">{edu.description}</p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Skills Section */}
-              {resumeData.skills && resumeData.skills.length > 0 && (
-                <div className="mb-8">
-                  <h2 
-                    className="text-xl font-semibold mb-4 pb-2 border-b-2"
-                    style={{ borderColor: currentTemplate.colors.primary }}
-                  >
-                    {previewLanguage === 'ar' ? 'المهارات' : 'Skills'}
-                  </h2>
-                  <div className="grid grid-cols-2 gap-4">
-                    {(Array.isArray(resumeData.skills) ? resumeData.skills : []).map((skill: any, index: number) => (
-                      <div key={index} className="flex items-center justify-between">
-                        <span className="font-medium">
-                          {typeof skill === 'string' ? skill : skill.name}
-                        </span>
-                        {typeof skill === 'object' && skill.level && (
-                          <span 
-                            className="text-xs px-2 py-1 rounded-full"
-                            style={{ 
-                              backgroundColor: currentTemplate.colors.accent + '20',
-                              color: currentTemplate.colors.accent
-                            }}
-                          >
-                            {skill.level === 'expert' ? (previewLanguage === 'ar' ? 'خبير' : 'Expert') :
-                             skill.level === 'advanced' ? (previewLanguage === 'ar' ? 'متقدم' : 'Advanced') :
-                             skill.level === 'intermediate' ? (previewLanguage === 'ar' ? 'متوسط' : 'Intermediate') :
-                             (previewLanguage === 'ar' ? 'مبتدئ' : 'Beginner')}
-                          </span>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Certificates Section */}
-              {resumeData.certificates && resumeData.certificates.length > 0 && (
-                <div className="mb-8">
-                  <h2 
-                    className="text-xl font-semibold mb-4 pb-2 border-b-2"
-                    style={{ borderColor: currentTemplate.colors.primary }}
-                  >
-                    {previewLanguage === 'ar' ? 'الشهادات' : 'Certificates'}
-                  </h2>
-                  <div className="grid grid-cols-1 gap-3">
-                    {resumeData.certificates.map((cert: any, index: number) => (
-                      <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                        <div>
-                          <h4 className="font-medium">{cert.name}</h4>
-                          <p className="text-sm text-gray-600">{cert.issuer}</p>
-                        </div>
-                        <span className="text-sm text-gray-500">{cert.date}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+            )}
           </div>
         </div>
       </div>
