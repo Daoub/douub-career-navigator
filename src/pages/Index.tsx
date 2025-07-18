@@ -3,6 +3,8 @@ import { ArrowRight, Users, FileText, Calendar, MessageCircle, Briefcase, Globe,
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Logo from '@/components/Logo';
+import Navbar from '@/components/Navbar';
+
 const Index = () => {
   const coreFeatures = [{
     icon: <Globe className="h-8 w-8 text-emerald-600" />,
@@ -35,6 +37,7 @@ const Index = () => {
     description: "We provide you with interview questions for all job titles",
     descriptionAr: "نوفر لك أسئلة الجهات في المقابلات الشخصية لكل المسميات الوظيفية"
   }];
+
   const subscriptionTiers = [{
     name: "Basic",
     nameAr: "أساسي",
@@ -46,25 +49,10 @@ const Index = () => {
     featuresAr: ["حصر وفرز جميع الوظايف المنشورة بمواقع التواصل الاجتماعي", " الأحداث المهنية", "إنشاء و تعديل و تحليل السيرة الذاتية", "تنزيل ٣ نماذج أعمال", "أسئلة المقابلات الشخصية لوظيفة واحدة"],
     popular: false
   }];
+
   return <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-emerald-50" dir="rtl">
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm shadow-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Logo size="md" />
-            <nav className="hidden md:flex items-center space-x-6 rtl:space-x-reverse">
-              <a href="#features" className="text-gray-700 hover:text-emerald-600 transition-colors">الميزات</a>
-              <a href="#pricing" className="text-gray-700 hover:text-emerald-600 transition-colors">الأسعار</a>
-              <a href="#contact" className="text-gray-700 hover:text-emerald-600 transition-colors">تواصل معنا</a>
-              <a href="/demo" className="text-gray-700 hover:text-emerald-600 transition-colors">العرض التوضيحي</a>
-              <a href="/login" className="text-gray-700 hover:text-emerald-600 transition-colors">تسجيل الدخول</a>
-              <Button className="bg-gradient-to-r from-emerald-600 to-blue-600 hover:from-emerald-700 hover:to-blue-700">
-                <a href="/signup">ابدأ الآن</a>
-              </Button>
-            </nav>
-          </div>
-        </div>
-      </header>
+      <Navbar />
 
       {/* Hero Section */}
       <section className="py-20 px-4">
@@ -91,9 +79,6 @@ const Index = () => {
           </div>
         </div>
       </section>
-
-      {/* Stats Section */}
-      
 
       {/* Features Section */}
       <section id="features" className="py-20 px-4">
@@ -133,7 +118,6 @@ const Index = () => {
             <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">
               باقة الاشتراك
             </h2>
-
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto px-px">
@@ -192,7 +176,6 @@ const Index = () => {
             <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent py-[2px]">
               تواصل معنا
             </h2>
-            
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
@@ -242,4 +225,5 @@ const Index = () => {
       </footer>
     </div>;
 };
+
 export default Index;
