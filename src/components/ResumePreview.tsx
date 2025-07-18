@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,9 +20,11 @@ import {
   Languages
 } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useToast } from '@/hooks/use-toast';
+import { exportService, ResumeData } from '@/services/exportService';
 
 interface ResumePreviewProps {
-  resumeData: any;
+  resumeData: ResumeData;
   selectedTemplate?: string;
   onExport?: (format: string) => void;
   onShare?: () => void;
@@ -34,10 +37,12 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({
   onShare
 }) => {
   const { t, language } = useTranslation();
+  const { toast } = useToast();
   const [zoom, setZoom] = useState(100);
   const [viewMode, setViewMode] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
   const [previewLanguage, setPreviewLanguage] = useState<'ar' | 'en'>('ar');
   const [showGrid, setShowGrid] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   const templates = {
     'vision-professional': {
@@ -70,6 +75,36 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({
 
   const handleZoomIn = () => setZoom(prev => Math.min(prev + 10, 200));
   const handleZoomOut = () => setZoom(prev => Math.max(prev - 10, 50));
+
+  const handleQuickExport = async (format: 'pdf' | 'docx' | 'html') => {
+    setIsExporting(true);
+    try {
+      await exportService.exportResume(resumeData, {
+        format,
+        quality: 'high',
+        template: selectedTemplate,
+        language: previewLanguage,
+        watermark: false
+      });
+      
+      toast({
+        title: language === 'ar' ? 'تم التصدير بنجاح' : 'Export Successful',
+        description: language === 'ar' 
+          ? `تم تصدير السيرة الذاتية بصيغة ${format.toUpperCase()}`
+          : `Resume exported as ${format.toUpperCase()}`,
+      });
+      
+      onExport?.(format);
+    } catch (error) {
+      toast({
+        title: language === 'ar' ? 'خطأ في التصدير' : 'Export Error',
+        description: language === 'ar' ? 'حدث خطأ أثناء تصدير السيرة الذاتية' : 'An error occurred while exporting the resume',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const getViewModeIcon = (mode: typeof viewMode) => {
     switch (mode) {
@@ -152,9 +187,14 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({
                 <Share2 className="h-4 w-4 mr-2" />
                 {language === 'ar' ? 'مشاركة' : 'Share'}
               </Button>
-              <Button variant="outline" size="sm" onClick={() => onExport?.('pdf')}>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => handleQuickExport('pdf')}
+                disabled={isExporting}
+              >
                 <Download className="h-4 w-4 mr-2" />
-                {language === 'ar' ? 'تحميل' : 'Download'}
+                {language === 'ar' ? 'تحميل PDF' : 'Download PDF'}
               </Button>
               <Button variant="outline" size="sm" onClick={() => window.print()}>
                 <Printer className="h-4 w-4 mr-2" />
@@ -169,6 +209,7 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({
       <div className="flex justify-center">
         <div className={`${getViewModeWidth()} transition-all duration-300`}>
           <div 
+            data-resume-preview="true"
             className="bg-white shadow-2xl rounded-lg overflow-hidden border-2 border-gray-200"
             style={{ 
               transform: `scale(${zoom / 100})`,
@@ -325,21 +366,25 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({
                     {previewLanguage === 'ar' ? 'المهارات' : 'Skills'}
                   </h2>
                   <div className="grid grid-cols-2 gap-4">
-                    {resumeData.skills.map((skill: any, index: number) => (
+                    {(Array.isArray(resumeData.skills) ? resumeData.skills : []).map((skill: any, index: number) => (
                       <div key={index} className="flex items-center justify-between">
-                        <span className="font-medium">{skill.name}</span>
-                        <span 
-                          className="text-xs px-2 py-1 rounded-full"
-                          style={{ 
-                            backgroundColor: currentTemplate.colors.accent + '20',
-                            color: currentTemplate.colors.accent
-                          }}
-                        >
-                          {skill.level === 'expert' ? (previewLanguage === 'ar' ? 'خبير' : 'Expert') :
-                           skill.level === 'advanced' ? (previewLanguage === 'ar' ? 'متقدم' : 'Advanced') :
-                           skill.level === 'intermediate' ? (previewLanguage === 'ar' ? 'متوسط' : 'Intermediate') :
-                           (previewLanguage === 'ar' ? 'مبتدئ' : 'Beginner')}
+                        <span className="font-medium">
+                          {typeof skill === 'string' ? skill : skill.name}
                         </span>
+                        {typeof skill === 'object' && skill.level && (
+                          <span 
+                            className="text-xs px-2 py-1 rounded-full"
+                            style={{ 
+                              backgroundColor: currentTemplate.colors.accent + '20',
+                              color: currentTemplate.colors.accent
+                            }}
+                          >
+                            {skill.level === 'expert' ? (previewLanguage === 'ar' ? 'خبير' : 'Expert') :
+                             skill.level === 'advanced' ? (previewLanguage === 'ar' ? 'متقدم' : 'Advanced') :
+                             skill.level === 'intermediate' ? (previewLanguage === 'ar' ? 'متوسط' : 'Intermediate') :
+                             (previewLanguage === 'ar' ? 'مبتدئ' : 'Beginner')}
+                          </span>
+                        )}
                       </div>
                     ))}
                   </div>

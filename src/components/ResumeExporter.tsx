@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,14 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Download, Share2, Link2, Mail, MessageSquare, FileText, Image, Globe } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useToast } from '@/hooks/use-toast';
-
-interface ExportOptions {
-  format: 'pdf' | 'docx' | 'html' | 'json';
-  quality: 'standard' | 'high' | 'print';
-  template: string;
-  language: 'ar' | 'en' | 'both';
-  watermark: boolean;
-}
+import { exportService, ExportOptions, ResumeData } from '@/services/exportService';
 
 interface ShareOptions {
   method: 'link' | 'email' | 'whatsapp' | 'linkedin';
@@ -24,7 +18,7 @@ interface ShareOptions {
 }
 
 interface ResumeExporterProps {
-  resumeData: any;
+  resumeData: ResumeData;
   onExport?: (options: ExportOptions) => void;
   onShare?: (options: ShareOptions) => void;
 }
@@ -59,8 +53,7 @@ const ResumeExporter: React.FC<ResumeExporterProps> = ({
     setIsExporting(true);
     
     try {
-      // Simulate export process
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await exportService.exportResume(resumeData, exportOptions);
       
       toast({
         title: language === 'ar' ? 'تم التصدير بنجاح' : 'Export Successful',
@@ -71,6 +64,7 @@ const ResumeExporter: React.FC<ResumeExporterProps> = ({
 
       onExport?.(exportOptions);
     } catch (error) {
+      console.error('Export error:', error);
       toast({
         title: language === 'ar' ? 'خطأ في التصدير' : 'Export Error',
         description: language === 'ar' ? 'حدث خطأ أثناء تصدير السيرة الذاتية' : 'An error occurred while exporting the resume',

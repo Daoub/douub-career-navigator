@@ -33,10 +33,13 @@ import ResumeExporter from '@/components/ResumeExporter';
 import ResumePreview from '@/components/ResumePreview';
 import LanguageSelector from '@/components/LanguageSelector';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useToast } from '@/hooks/use-toast';
+import { ResumeData, ExportOptions } from '@/services/exportService';
 
 const Resume = () => {
   const navigate = useNavigate();
   const { t, language } = useTranslation();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('builder');
   const [builderMode, setBuilderMode] = useState<'standard' | 'bilingual'>('standard');
   
@@ -45,7 +48,8 @@ const Resume = () => {
     sessionStorage.clear();
     navigate('/');
   };
-  const [resumeData, setResumeData] = useState({
+
+  const [resumeData, setResumeData] = useState<ResumeData>({
     personalInfo: {
       name: 'أحمد محمد العلي',
       email: 'ahmed@email.com',
@@ -57,27 +61,56 @@ const Resume = () => {
       {
         title: 'مطور تطبيقات أول',
         company: 'شركة التقنية المتقدمة',
-        duration: '2022 - الحاضر',
-        description: 'تطوير وصيانة تطبيقات الويب باستخدام React و Node.js'
+        startDate: '2022',
+        current: true,
+        description: 'تطوير وصيانة تطبيقات الويب باستخدام React و Node.js',
+        achievements: [
+          'تطوير 3 تطبيقات ويب رئيسية',
+          'تحسين أداء التطبيقات بنسبة 40%',
+          'قيادة فريق من 5 مطورين'
+        ]
       }
     ],
     education: [
       {
         degree: 'بكالوريوس علوم الحاسوب',
         institution: 'جامعة الملك سعود',
-        year: '2019',
+        startDate: '2015',
+        endDate: '2019',
         gpa: '3.8/4.0'
       }
     ],
-    skills: ['JavaScript', 'React', 'Node.js', 'Python', 'SQL'],
+    skills: [
+      { name: 'JavaScript', level: 'expert' as const },
+      { name: 'React', level: 'expert' as const },
+      { name: 'Node.js', level: 'advanced' as const },
+      { name: 'Python', level: 'intermediate' as const },
+      { name: 'SQL', level: 'advanced' as const }
+    ],
     certificates: [
       {
         name: 'شهادة AWS المطور المعتمد',
         issuer: 'Amazon Web Services',
-        year: '2023'
+        date: '2023'
       }
     ]
   });
+
+  const handleExportSuccess = (options: ExportOptions) => {
+    toast({
+      title: language === 'ar' ? 'تم التصدير بنجاح' : 'Export Successful',
+      description: language === 'ar' 
+        ? `تم تصدير السيرة الذاتية بصيغة ${options.format.toUpperCase()}`
+        : `Resume exported as ${options.format.toUpperCase()}`,
+    });
+  };
+
+  const handleShareSuccess = () => {
+    toast({
+      title: language === 'ar' ? 'تم إنشاء رابط المشاركة' : 'Share Link Created',
+      description: language === 'ar' ? 'تم إنشاء رابط مشاركة السيرة الذاتية بنجاح' : 'Resume share link has been created successfully',
+    });
+  };
 
   const templates = [
     { id: 1, name: 'النموذج الكلاسيكي', preview: '/placeholder.svg' },
@@ -194,14 +227,35 @@ const Resume = () => {
             <TabsContent value="builder">
               {builderMode === 'bilingual' ? (
                 <BilingualResumeBuilder 
-                  onSave={(data) => console.log('Saving bilingual resume:', data)}
-                  onPreview={(data, lang) => console.log('Previewing resume:', data, lang)}
+                  onSave={(data) => {
+                    setResumeData(data as ResumeData);
+                    toast({
+                      title: language === 'ar' ? 'تم الحفظ' : 'Saved',
+                      description: language === 'ar' ? 'تم حفظ السيرة الذاتية بنجاح' : 'Resume saved successfully'
+                    });
+                  }}
+                  onPreview={(data, lang) => {
+                    setResumeData(data as ResumeData);
+                    setActiveTab('preview');
+                  }}
                 />
               ) : (
                 <ResumeBuilder 
-                  onSave={(data) => console.log('Saving resume:', data)}
-                  onPreview={(data) => console.log('Previewing resume:', data)}
-                  onExport={(data) => console.log('Exporting resume:', data)}
+                  onSave={(data) => {
+                    setResumeData(data as ResumeData);
+                    toast({
+                      title: language === 'ar' ? 'تم الحفظ' : 'Saved',
+                      description: language === 'ar' ? 'تم حفظ السيرة الذاتية بنجاح' : 'Resume saved successfully'
+                    });
+                  }}
+                  onPreview={(data) => {
+                    setResumeData(data as ResumeData);
+                    setActiveTab('preview');
+                  }}
+                  onExport={(data) => {
+                    setResumeData(data as ResumeData);
+                    setActiveTab('export');
+                  }}
                 />
               )}
             </TabsContent>
@@ -218,8 +272,8 @@ const Resume = () => {
             <TabsContent value="export">
               <ResumeExporter 
                 resumeData={resumeData}
-                onExport={(options) => console.log('Export options:', options)}
-                onShare={(options) => console.log('Share options:', options)}
+                onExport={handleExportSuccess}
+                onShare={handleShareSuccess}
               />
             </TabsContent>
 
@@ -233,8 +287,14 @@ const Resume = () => {
               <ResumePreview 
                 resumeData={resumeData}
                 selectedTemplate="vision-professional"
-                onExport={(format) => console.log('Export format:', format)}
-                onShare={() => console.log('Share resume')}
+                onExport={(format) => {
+                  console.log('Quick export format:', format);
+                  setActiveTab('export');
+                }}
+                onShare={() => {
+                  console.log('Share resume');
+                  setActiveTab('export');
+                }}
               />
             </TabsContent>
           </Tabs>
