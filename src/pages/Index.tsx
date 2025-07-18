@@ -93,28 +93,7 @@ const Index = () => {
       </section>
 
       {/* Stats Section */}
-      <section className="py-16 bg-white/50 backdrop-blur-sm">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <div className="text-center">
-              <div className="text-4xl font-bold text-emerald-600 mb-2">10,000+</div>
-              <div className="text-gray-600">فرصة وظيفية</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold text-blue-600 mb-2">5,000+</div>
-              <div className="text-gray-600">مستخدم نشط</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold text-purple-600 mb-2">500+</div>
-              <div className="text-gray-600">استشاري متخصص</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold text-orange-600 mb-2">95%</div>
-              <div className="text-gray-600">معدل الرضا</div>
-            </div>
-          </div>
-        </div>
-      </section>
+      
 
       {/* Features Section */}
       <section id="features" className="py-20 px-4">
