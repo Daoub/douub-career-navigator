@@ -28,7 +28,7 @@ const InterviewPrep: React.FC<InterviewPrepProps> = ({ specialty = 'technology' 
   ];
 
   useEffect(() => {
-    const questionSet = getRandomQuestions(selectedSpecialty, 10);
+    const questionSet = getRandomQuestions(10);
     setQuestions(questionSet);
     setCurrentQuestion(questionSet[0] || null);
     setCurrentIndex(0);
