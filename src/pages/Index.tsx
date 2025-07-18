@@ -1,8 +1,9 @@
 import React from 'react';
-import { ArrowRight, Users, FileText, Calendar, MessageCircle, Briefcase, Globe, Star, CheckCircle, Phone, Mail, MapPin } from 'lucide-react';
+import { ArrowRight, Users, FileText, Calendar, MessageCircle, Briefcase, Globe, Star, CheckCircle, Phone, Mail, MapPin, Zap, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Logo from '@/components/Logo';
+
 const Index = () => {
   const coreFeatures = [{
     icon: <Globe className="h-8 w-8 text-emerald-600" />,
@@ -35,17 +36,87 @@ const Index = () => {
     description: "We provide you with interview questions for all job titles",
     descriptionAr: "نوفر لك أسئلة الجهات في المقابلات الشخصية لكل المسميات الوظيفية"
   }];
+
   const subscriptionTiers = [{
     name: "Basic",
     nameAr: "أساسي",
-    price: "20",
-    currency: "SAR",
+    price: "مجاني",
+    currency: "",
     period: "month",
-    periodAr: "شهر",
-    features: [" Inventory and sort all posts posted on social media sites", "Create, edit and analyze resumes", "Download 3 business models", "Professional events", "Interview questions for one job"],
-    featuresAr: ["حصر وفرز جميع الوظايف المنشورة بمواقع التواصل الاجتماعي", " الأحداث المهنية", "إنشاء و تعديل و تحليل السيرة الذاتية", "تنزيل ٣ نماذج أعمال", "أسئلة المقابلات الشخصية لوظيفة واحدة"],
-    popular: false
+    periodAr: "للأبد",
+    features: [
+      "البحث عن الوظائف الأساسي",
+      "إنشاء سيرة ذاتية واحدة",
+      "تنزيل نموذج عمل واحد",
+      "عرض الأحداث المهنية",
+      "دعم المجتمع"
+    ],
+    featuresAr: [
+      "البحث عن الوظائف الأساسي",
+      "إنشاء سيرة ذاتية واحدة", 
+      "تنزيل نموذج عمل واحد",
+      "عرض الأحداث المهنية",
+      "دعم المجتمع"
+    ],
+    popular: false,
+    icon: <Zap className="h-6 w-6" />,
+    color: "from-gray-500 to-gray-600"
+  }, {
+    name: "Professional",
+    nameAr: "احترافي",
+    price: "99",
+    currency: "ريال",
+    period: "month",
+    periodAr: "شهرياً",
+    features: [
+      "حصر وفرز جميع الوظائف المنشورة بمواقع التواصل الاجتماعي",
+      "إنشاء و تعديل و تحليل السيرة الذاتية",
+      "تنزيل ٥ نماذج أعمال",
+      "الأحداث المهنية",
+      "أسئلة المقابلات الشخصية لـ ٣ وظائف",
+      "دعم فني مباشر"
+    ],
+    featuresAr: [
+      "حصر وفرز جميع الوظائف المنشورة بمواقع التواصل الاجتماعي",
+      "إنشاء و تعديل و تحليل السيرة الذاتية",
+      "تنزيل ٥ نماذج أعمال", 
+      "الأحداث المهنية",
+      "أسئلة المقابلات الشخصية لـ ٣ وظائف",
+      "دعم فني مباشر"
+    ],
+    popular: true,
+    icon: <Star className="h-6 w-6" />,
+    color: "from-emerald-500 to-blue-600"
+  }, {
+    name: "Enterprise",
+    nameAr: "مؤسسي",
+    price: "299",
+    currency: "ريال",
+    period: "month", 
+    periodAr: "شهرياً",
+    features: [
+      "جميع ميزات الباقة الاحترافية",
+      "تحليل متقدم للسيرة الذاتية بالذكاء الاصطناعي",
+      "تنزيل غير محدود لنماذج الأعمال",
+      "استشارات مهنية مخصصة",
+      "أسئلة مقابلات لجميع الوظائف",
+      "دعم أولوية ٢٤/٧",
+      "تقارير تحليلية مفصلة"
+    ],
+    featuresAr: [
+      "جميع ميزات الباقة الاحترافية",
+      "تحليل متقدم للسيرة الذاتية بالذكاء الاصطناعي", 
+      "تنزيل غير محدود لنماذج الأعمال",
+      "استشارات مهنية مخصصة",
+      "أسئلة مقابلات لجميع الوظائف",
+      "دعم أولوية ٢٤/٧",
+      "تقارير تحليلية مفصلة"
+    ],
+    popular: false,
+    icon: <Crown className="h-6 w-6" />,
+    color: "from-purple-500 to-pink-600"
   }];
+
   return <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-emerald-50" dir="rtl">
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-sm shadow-sm sticky top-0 z-50">
@@ -152,35 +223,64 @@ const Index = () => {
         <div className="container mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">
-              باقة الاشتراك
+              باقات الاشتراك
             </h2>
-
+            <p className="text-xl text-gray-700 max-w-3xl mx-auto">
+              اختر الباقة التي تناسب احتياجاتك المهنية وابدأ رحلتك نحو النجاح
+            </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {subscriptionTiers.map((tier, index) => <Card key={index} className={`relative hover:shadow-xl transition-all duration-300 ${tier.popular ? 'scale-105 border-2 border-emerald-500 bg-gradient-to-br from-white to-emerald-50' : 'bg-white/80 backdrop-blur-sm'}`}>
-                {tier.popular && <div className="absolute -top-4 right-1/2 transform translate-x-1/2 bg-gradient-to-r from-emerald-600 to-blue-600 text-white px-6 py-2 rounded-full text-sm font-bold">
-                    الأكثر شعبية
-                  </div>}
-                <CardHeader className="text-center pb-8">
-                  <CardTitle className="text-2xl font-bold text-gray-800 mb-2">{tier.nameAr}</CardTitle>
-                  <div className="mb-4">
-                    <span className="text-4xl font-bold text-emerald-600">{tier.price}</span>
-                    <span className="text-gray-600 mr-2">{tier.currency} / {tier.periodAr}</span>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-3 mb-8">
-                    {tier.featuresAr.map((feature, featureIndex) => <li key={featureIndex} className="flex items-center">
-                        <CheckCircle className="h-5 w-5 text-emerald-600 ml-3 flex-shrink-0" />
-                        <span className="text-gray-700">{feature}</span>
-                      </li>)}
-                  </ul>
-                  <Button className={`w-full ${tier.popular ? 'bg-gradient-to-r from-emerald-600 to-blue-600 hover:from-emerald-700 hover:to-blue-700' : 'bg-gray-800 hover:bg-gray-900'}`}>
-                    <a href="/signup">اختر هذه الباقة</a>
-                  </Button>
-                </CardContent>
-              </Card>)}
+          <div className="flex justify-center">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl">
+              {subscriptionTiers.map((tier, index) => (
+                <Card 
+                  key={index} 
+                  className={`relative hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 ${
+                    tier.popular 
+                      ? 'scale-105 border-2 border-emerald-500 bg-gradient-to-br from-white to-emerald-50 shadow-2xl' 
+                      : 'bg-white/90 backdrop-blur-sm shadow-lg hover:shadow-xl'
+                  }`}
+                >
+                  {tier.popular && (
+                    <div className="absolute -top-4 right-1/2 transform translate-x-1/2 bg-gradient-to-r from-emerald-600 to-blue-600 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg">
+                      الأكثر شعبية
+                    </div>
+                  )}
+                  
+                  <CardHeader className="text-center pb-8 relative">
+                    <div className={`w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r ${tier.color} flex items-center justify-center text-white shadow-lg`}>
+                      {tier.icon}
+                    </div>
+                    <CardTitle className="text-2xl font-bold text-gray-800 mb-2">{tier.nameAr}</CardTitle>
+                    <div className="mb-4">
+                      <span className="text-4xl font-bold text-emerald-600">{tier.price}</span>
+                      {tier.currency && <span className="text-gray-600 mr-2">{tier.currency}</span>}
+                      <span className="text-gray-600">/ {tier.periodAr}</span>
+                    </div>
+                  </CardHeader>
+                  
+                  <CardContent>
+                    <ul className="space-y-4 mb-8">
+                      {tier.featuresAr.map((feature, featureIndex) => (
+                        <li key={featureIndex} className="flex items-start">
+                          <CheckCircle className="h-5 w-5 text-emerald-600 ml-3 flex-shrink-0 mt-0.5" />
+                          <span className="text-gray-700 text-sm leading-relaxed">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <Button 
+                      className={`w-full ${
+                        tier.popular 
+                          ? 'bg-gradient-to-r from-emerald-600 to-blue-600 hover:from-emerald-700 hover:to-blue-700 shadow-lg' 
+                          : 'bg-gray-800 hover:bg-gray-900'
+                      }`}
+                    >
+                      <a href="/signup">اختر هذه الباقة</a>
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -265,4 +365,5 @@ const Index = () => {
       </footer>
     </div>;
 };
+
 export default Index;
