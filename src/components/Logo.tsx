@@ -46,7 +46,7 @@ const Logo: React.FC<LogoProps> = ({
         دؤوب
       </h1>
       <p className="text-xs text-gray-600 font-medium tracking-wide">
-        Do'oub Platform
+        Dooub
       </p>
     </div>
   );
