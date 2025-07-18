@@ -34,6 +34,12 @@ const Index = () => {
     titleAr: "أسئلة المقابلات الشخصية",
     description: "We provide you with interview questions for all job titles",
     descriptionAr: "نوفر لك أسئلة الجهات في المقابلات الشخصية لكل المسميات الوظيفية"
+  }, {
+    icon: <Users className="h-8 w-8 text-indigo-600" />,
+    title: "Professional Communities",
+    titleAr: "المجتمعات المهنية",
+    description: "Networking and peer interaction platforms",
+    descriptionAr: "منصات التواصل والتفاعل مع الأقران"
   }];
   const subscriptionTiers = [{
     name: "Basic",
@@ -93,7 +99,7 @@ const Index = () => {
             <div className="flex justify-center mb-8">
               <Logo size="xl" />
             </div>
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-emerald-600 via-blue-600 to-purple-600 bg-clip-text text-transparent leading-tight">
+            <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-emerald-600 via-blue-600 to-purple-600 bg-clip-text text-transparent leading-tight py-0">
               ثورة في سوق العمل السعودي
             </h1>
             <p className="text-xl md:text-2xl text-gray-700 mb-8 leading-relaxed">
@@ -113,28 +119,7 @@ const Index = () => {
       </section>
 
       {/* Stats Section */}
-      <section className="py-16 bg-white/50 backdrop-blur-sm">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <div className="text-center">
-              <div className="text-4xl font-bold text-emerald-600 mb-2">10,000+</div>
-              <div className="text-gray-600">فرصة وظيفية</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold text-blue-600 mb-2">5,000+</div>
-              <div className="text-gray-600">مستخدم نشط</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold text-purple-600 mb-2">500+</div>
-              <div className="text-gray-600">استشاري متخصص</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold text-orange-600 mb-2">95%</div>
-              <div className="text-gray-600">معدل الرضا</div>
-            </div>
-          </div>
-        </div>
-      </section>
+      
 
       {/* Features Section */}
       <section id="features" className="py-20 px-4">
