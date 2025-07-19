@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ArrowRight, Users, FileText, Calendar, MessageCircle, Briefcase, Globe, Star, CheckCircle, Phone, Mail, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -65,13 +64,26 @@ const Index = () => {
             <p className="text-xl md:text-2xl text-gray-700 mb-8 leading-relaxed">
               منصة متكاملة للخدمات المهنية تستهدف الخريجين الجدد والباحثين عن عمل وطالبي التطوير المهني في المملكة العربية السعودية
             </p>
+            
+            {/* Free Trial Notice */}
+            <div className="bg-gradient-to-r from-emerald-100 to-blue-100 border border-emerald-200 rounded-lg p-6 mb-8 max-w-2xl mx-auto">
+              <div className="flex items-center justify-center mb-4">
+                <Star className="h-6 w-6 text-emerald-600 ml-2" />
+                <h3 className="text-2xl font-bold text-emerald-700">تجربة مجانية ليوم واحد</h3>
+                <Star className="h-6 w-6 text-emerald-600 mr-2" />
+              </div>
+              <p className="text-lg text-emerald-800 font-medium">
+                استكشف جميع ميزات المنصة مجاناً لمدة 24 ساعة كاملة
+              </p>
+              <p className="text-base text-emerald-700 mt-2">
+                بدون التزام مالي • إلغاء في أي وقت • وصول كامل لجميع الخدمات
+              </p>
+            </div>
+
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Button size="lg" className="bg-gradient-to-r from-emerald-600 to-blue-600 hover:from-emerald-700 hover:to-blue-700 text-lg px-8 py-3">
-                <a href="/signup">ابدأ رحلتك المهنية</a>
+                <a href="/signup">ابدأ تجربتك المجانية</a>
                 <ArrowRight className="mr-2 h-5 w-5 rtl:rotate-180" />
-              </Button>
-              <Button size="lg" variant="outline" className="text-lg px-8 py-3 border-2 border-emerald-600 text-emerald-600 hover:bg-emerald-50">
-                <a href="/demo">شاهد العرض التوضيحي</a>
               </Button>
             </div>
           </div>
@@ -154,13 +166,16 @@ const Index = () => {
               <Logo size="lg" variant="icon" />
             </div>
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              ابدأ رحلتك المهنية اليوم
+              جرب منصتنا مجاناً لمدة يوم كامل
             </h2>
-            <p className="text-xl mb-8 opacity-90">
-              انضم إلى آلاف المهنيين الذين طوروا مسيراتهم المهنية معنا
+            <p className="text-xl mb-4 opacity-90">
+              اكتشف قوة أدواتنا المهنية واستفد من جميع الميزات بدون أي التزام مالي
+            </p>
+            <p className="text-lg mb-8 opacity-80">
+              ⭐ وصول كامل لجميع الخدمات • 🚀 بدء فوري • ❌ بدون بطاقة ائتمان
             </p>
             <Button size="lg" className="bg-white text-emerald-600 hover:bg-gray-100 text-lg px-8 py-3">
-              <a href="/signup">سجل مجاناً الآن</a>
+              <a href="/signup">ابدأ تجربتك المجانية الآن</a>
               <ArrowRight className="mr-2 h-5 w-5 rtl:rotate-180" />
             </Button>
           </div>
@@ -184,8 +199,6 @@ const Index = () => {
                 <p className="text-base text-zinc-600 font-normal">537805735 966+</p>
               </CardContent>
             </Card>
-
-
 
             <Card className="text-center hover:shadow-lg transition-shadow bg-gradient-to-br from-blue-50 to-white">
               <CardContent className="pt-8">
