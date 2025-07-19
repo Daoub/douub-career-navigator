@@ -171,6 +171,94 @@ const PackageSelector: React.FC = () => {
       });
     }
   };
-  return;
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <div className="text-center mb-8">
+        <h2 className="text-3xl font-bold text-foreground mb-4">اختر الباقة المناسبة لك</h2>
+        <p className="text-muted-foreground text-lg">باقات مصممة خصيصاً لتلبية احتياجاتك المهنية</p>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        {packages.map((pkg) => (
+          <Card 
+            key={pkg.id}
+            className={`relative transition-all duration-300 hover:shadow-lg cursor-pointer ${
+              selectedPackage === pkg.id ? 'ring-2 ring-primary' : ''
+            } ${pkg.popular ? 'border-primary shadow-md' : ''}`}
+            onClick={() => handleSelectPackage(pkg.id)}
+          >
+            {pkg.popular && (
+              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                <Badge className="bg-primary text-primary-foreground">الأكثر شعبية</Badge>
+              </div>
+            )}
+            {pkg.premium && (
+              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                <Badge className="bg-gradient-to-r from-purple-500 to-pink-600 text-white">مميز</Badge>
+              </div>
+            )}
+            
+            <CardHeader className="text-center">
+              <div className={`w-12 h-12 mx-auto mb-4 rounded-full bg-gradient-to-r ${pkg.color} flex items-center justify-center text-white`}>
+                {pkg.icon}
+              </div>
+              <CardTitle className="text-xl font-bold">{pkg.name}</CardTitle>
+              <CardDescription className="text-sm">{pkg.description}</CardDescription>
+              <div className="mt-4">
+                <span className="text-3xl font-bold text-foreground">{pkg.price === 0 ? 'مجاني' : `${pkg.price} ر.س`}</span>
+                <span className="text-muted-foreground text-sm">/{pkg.period}</span>
+              </div>
+            </CardHeader>
+            
+            <CardContent>
+              <ul className="space-y-3">
+                {pkg.features.map((feature, index) => (
+                  <li key={index} className="flex items-start space-x-3 space-x-reverse">
+                    <div className="mt-0.5">
+                      {feature.included ? (
+                        <CheckCircle className="h-5 w-5 text-green-500" />
+                      ) : (
+                        <div className="h-5 w-5 rounded-full border-2 border-muted"></div>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <span className={`text-sm ${feature.included ? 'text-foreground' : 'text-muted-foreground'}`}>
+                        {feature.name}
+                      </span>
+                      {feature.description && (
+                        <p className="text-xs text-muted-foreground mt-1">{feature.description}</p>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              
+              <Button 
+                className="w-full mt-6"
+                variant={selectedPackage === pkg.id ? "default" : "outline"}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleSelectPackage(pkg.id);
+                }}
+              >
+                {selectedPackage === pkg.id ? 'الباقة المختارة' : 'اختيار الباقة'}
+              </Button>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+      
+      <div className="text-center">
+        <Button 
+          size="lg"
+          onClick={handlePurchase}
+          className="px-8 py-3"
+          disabled={!selectedPackage}
+        >
+          {selectedPackage === 'trial' ? 'ابدأ التجربة المجانية' : 'المتابعة للدفع'}
+        </Button>
+      </div>
+    </div>
+  );
 };
 export default PackageSelector;
