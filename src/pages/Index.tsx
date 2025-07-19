@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Logo from '@/components/Logo';
 import SocialLinks from '@/components/SocialLinks';
-
 const Index = () => {
   const coreFeatures = [{
     icon: <Globe className="h-8 w-8 text-emerald-600" />,
@@ -37,7 +36,6 @@ const Index = () => {
     description: "We provide you with interview questions for all job titles",
     descriptionAr: "نوفر لك أسئلة الجهات في المقابلات الشخصية لكل المسميات الوظيفية"
   }];
-
   const subscriptionTiers = [{
     name: "Basic",
     nameAr: "أساسي",
@@ -49,7 +47,6 @@ const Index = () => {
     featuresAr: ["حصر وفرز جميع الوظايف المنشورة بمواقع التواصل الاجتماعي", " الأحداث المهنية", "إنشاء و تعديل و تحليل السيرة الذاتية", "تنزيل ٣ نماذج أعمال", "أسئلة المقابلات الشخصية لوظيفة واحدة"],
     popular: false
   }];
-
   return <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-emerald-50" dir="rtl">
       {/* Hero Section */}
       <section className="py-20 px-4">
@@ -58,33 +55,16 @@ const Index = () => {
             <div className="flex justify-center mb-8">
               <Logo size="xl" />
             </div>
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-emerald-600 via-blue-600 to-purple-600 bg-clip-text text-transparent leading-tight">
-              ثورة في سوق العمل السعودي
-            </h1>
+            <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-emerald-600 via-blue-600 to-purple-600 bg-clip-text text-transparent leading-tight py-[11px]">مستقبلك المهني يبدأ من دؤوب</h1>
             <p className="text-xl md:text-2xl text-gray-700 mb-8 leading-relaxed">
               منصة متكاملة للخدمات المهنية تستهدف الخريجين الجدد والباحثين عن عمل وطالبي التطوير المهني في المملكة العربية السعودية
             </p>
             
             {/* Free Trial Notice */}
-            <div className="bg-gradient-to-r from-emerald-100 to-blue-100 border border-emerald-200 rounded-lg p-6 mb-8 max-w-2xl mx-auto">
-              <div className="flex items-center justify-center mb-4">
-                <Star className="h-6 w-6 text-emerald-600 ml-2" />
-                <h3 className="text-2xl font-bold text-emerald-700">تجربة مجانية ليوم واحد</h3>
-                <Star className="h-6 w-6 text-emerald-600 mr-2" />
-              </div>
-              <p className="text-lg text-emerald-800 font-medium">
-                استكشف جميع ميزات المنصة مجاناً لمدة 24 ساعة كاملة
-              </p>
-              <p className="text-base text-emerald-700 mt-2">
-                بدون التزام مالي • إلغاء في أي وقت • وصول كامل لجميع الخدمات
-              </p>
-            </div>
+            
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Button size="lg" className="bg-gradient-to-r from-emerald-600 to-blue-600 hover:from-emerald-700 hover:to-blue-700 text-lg px-8 py-3">
-                <a href="/signup">ابدأ تجربتك المجانية</a>
-                <ArrowRight className="mr-2 h-5 w-5 rtl:rotate-180" />
-              </Button>
+              
             </div>
           </div>
         </div>
@@ -168,12 +148,8 @@ const Index = () => {
             <h2 className="text-4xl md:text-5xl font-bold mb-6">
               جرب منصتنا مجاناً لمدة يوم كامل
             </h2>
-            <p className="text-xl mb-4 opacity-90">
-              اكتشف قوة أدواتنا المهنية واستفد من جميع الميزات بدون أي التزام مالي
-            </p>
-            <p className="text-lg mb-8 opacity-80">
-              ⭐ وصول كامل لجميع الخدمات • 🚀 بدء فوري • ❌ بدون بطاقة ائتمان
-            </p>
+            <p className="text-xl mb-4 opacity-90">اكتشف قوة أدواتنا المهنية واستفد من جميع الميزات بدون أي التزام مادي</p>
+            
             <Button size="lg" className="bg-white text-emerald-600 hover:bg-gray-100 text-lg px-8 py-3">
               <a href="/signup">ابدأ تجربتك المجانية الآن</a>
               <ArrowRight className="mr-2 h-5 w-5 rtl:rotate-180" />
@@ -242,5 +218,4 @@ const Index = () => {
       </footer>
     </div>;
 };
-
 export default Index;
