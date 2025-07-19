@@ -22,7 +22,7 @@ const TrialPackage: React.FC = () => {
       used: 1,
       limit: 3,
       icon: <Star className="h-4 w-4" />,
-      description: 'تحليل مجاني للسيرة الذاتية بالذكاء الاصطناعي'
+      description: ''
     },
     {
       name: 'جلسات تحضير المقابلات',
@@ -118,19 +118,19 @@ const TrialPackage: React.FC = () => {
             <ul className="space-y-1 text-sm text-emerald-700">
               <li className="flex items-center gap-2">
                 <CheckCircle className="h-3 w-3" />
-                3 تحليلات للسيرة الذاتية بالذكاء الاصطناعي
+                الاطلاع على الوظائف
               </li>
               <li className="flex items-center gap-2">
                 <CheckCircle className="h-3 w-3" />
-                جلستان لتحضير المقابلات
+               الاطلاع على مسميات نماذج الأعمال
               </li>
               <li className="flex items-center gap-2">
                 <CheckCircle className="h-3 w-3" />
-                10 تقديمات على الوظائف
+                الاطلاع على الأحداث المهنية 
               </li>
               <li className="flex items-center gap-2">
                 <CheckCircle className="h-3 w-3" />
-                وصول محدود للمجتمعات المهنية
+                معرفة المسميات الوظيفة لخدمة أسئلة المقابلات الشخصية
               </li>
             </ul>
           </div>
@@ -173,55 +173,6 @@ const TrialPackage: React.FC = () => {
               )}
             </div>
           ))}
-        </CardContent>
-      </Card>
-
-      {/* Upgrade Prompt */}
-      <Card className="bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200">
-        <CardHeader>
-          <CardTitle className="text-purple-800">هل أعجبتك الخدمة؟</CardTitle>
-          <CardDescription className="text-purple-600">
-            ارق إلى الباقة المهنية للحصول على ميزات أكثر
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="bg-white/60 backdrop-blur-sm rounded-lg p-4 border border-purple-200">
-            <h4 className="font-medium text-purple-800 mb-2">ميزات الباقة المهنية:</h4>
-            <ul className="space-y-1 text-sm text-purple-700">
-              <li className="flex items-center gap-2">
-                <Star className="h-3 w-3" />
-                تحليل غير محدود للسيرة الذاتية
-              </li>
-              <li className="flex items-center gap-2">
-                <Star className="h-3 w-3" />
-                جلسات أسبوعية مع خبراء
-              </li>
-              <li className="flex items-center gap-2">
-                <Star className="h-3 w-3" />
-                تقديم غير محدود على الوظائف
-              </li>
-              <li className="flex items-center gap-2">
-                <Star className="h-3 w-3" />
-                مقابلات تجريبية مع متخصصين
-              </li>
-              <li className="flex items-center gap-2">
-                <Star className="h-3 w-3" />
-                دعم أولوية على مدار الساعة
-              </li>
-            </ul>
-          </div>
-          
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Button 
-              onClick={upgradeToProfessional}
-              className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-            >
-              ترقية للباقة المهنية - 50 ريال/شهر
-            </Button>
-            <Button variant="outline" className="flex-1">
-              مقارنة الباقات
-            </Button>
-          </div>
         </CardContent>
       </Card>
 
