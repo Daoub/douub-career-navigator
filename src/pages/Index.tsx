@@ -185,19 +185,13 @@ const Index = () => {
               </CardContent>
             </Card>
 
+
+
             <Card className="text-center hover:shadow-lg transition-shadow bg-gradient-to-br from-blue-50 to-white">
               <CardContent className="pt-8">
                 <Mail className="h-12 w-12 text-blue-600 mx-auto mb-4" />
                 <h3 className="text-xl font-bold mb-2">البريد الإلكتروني</h3>
                 <p className="text-gray-600">info@dooub.sa</p>
-              </CardContent>
-            </Card>
-
-            <Card className="text-center hover:shadow-lg transition-shadow bg-gradient-to-br from-purple-50 to-white">
-              <CardContent className="pt-8">
-                <MapPin className="h-12 w-12 text-purple-600 mx-auto mb-4" />
-                <h3 className="text-xl font-bold mb-2">العنوان</h3>
-                <p className="text-gray-600">الرياض، المملكة العربية السعودية</p>
               </CardContent>
             </Card>
           </div>
