@@ -4,6 +4,7 @@ import { ArrowRight, Users, FileText, Calendar, MessageCircle, Briefcase, Globe,
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Logo from '@/components/Logo';
+import SocialLinks from '@/components/SocialLinks';
 
 const Index = () => {
   const coreFeatures = [{
@@ -175,7 +176,7 @@ const Index = () => {
             </h2>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto mb-12">
             <Card className="text-center hover:shadow-lg transition-shadow bg-gradient-to-br from-emerald-50 to-white">
               <CardContent className="pt-8">
                 <Phone className="h-12 w-12 text-emerald-600 mx-auto mb-4" />
@@ -200,6 +201,12 @@ const Index = () => {
               </CardContent>
             </Card>
           </div>
+
+          {/* Social Media Links */}
+          <div className="text-center">
+            <h3 className="text-2xl font-bold mb-6 text-gray-800">تابعنا على وسائل التواصل الاجتماعي</h3>
+            <SocialLinks className="justify-center" />
+          </div>
         </div>
       </section>
 
@@ -213,6 +220,12 @@ const Index = () => {
             <p className="text-gray-400 mb-6">
               منصة متكاملة للخدمات المهنية في المملكة العربية السعودية
             </p>
+            
+            {/* Social Media Links in Footer */}
+            <div className="mb-6">
+              <SocialLinks variant="footer" className="justify-center" />
+            </div>
+            
             <div className="border-t border-gray-800 pt-6">
               <p className="text-gray-400 text-base text-center">©    دؤوب 2025 
 جميع الحقوق محفوظة.</p>

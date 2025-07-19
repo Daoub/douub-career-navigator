@@ -13,6 +13,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import Logo from "@/components/Logo";
+import SocialLinks from "@/components/SocialLinks";
 
 const navigationItems = [
   { title: "الرئيسية", url: "/", icon: Home },
@@ -55,6 +56,16 @@ export function AppSidebar() {
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Social Media Section */}
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-right">تابعنا</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <div className="px-2">
+              <SocialLinks variant="compact" className="justify-center" />
+            </div>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
