@@ -22,12 +22,14 @@ const Logo: React.FC<LogoProps> = ({
     lg: 'h-10 w-10',
     xl: 'h-16 w-16'
   };
-  const LogoIcon = () => <div className="relative">
-      
+  const LogoIcon = () => (
+    <div className="relative">
+      <Briefcase className={`${iconSizes[size]} text-emerald-600`} />
       <div className="absolute -top-1 -right-1">
-        
+        <Star className="h-3 w-3 text-yellow-500 fill-current" />
       </div>
-    </div>;
+    </div>
+  );
   const LogoText = () => <div className="flex flex-col">
       <h1 className={`${sizeClasses[size]} font-bold bg-gradient-to-r from-emerald-600 via-blue-600 to-purple-600 bg-clip-text text-transparent leading-tight`}>
         دؤوب
@@ -46,6 +48,11 @@ const Logo: React.FC<LogoProps> = ({
         <LogoText />
       </div>;
   }
-  return;
+  return (
+    <div className={`flex items-center gap-3 ${className}`}>
+      <LogoIcon />
+      <LogoText />
+    </div>
+  );
 };
 export default Logo;
