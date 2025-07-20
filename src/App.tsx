@@ -39,10 +39,15 @@ const App = () => (
             <div className="min-h-screen flex w-full">
               <AppSidebar />
               <div className="flex-1 flex flex-col">
-                <header className="h-12 flex items-center border-b bg-white/80 backdrop-blur-sm px-4">
+                <header className="h-12 flex items-center border-b bg-white/80 backdrop-blur-sm px-4 sticky top-0 z-40">
                   <SidebarTrigger className="ml-2" />
+                  <div className="flex-1 text-center">
+                    <span className="text-lg font-semibold bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">
+                      منصة دؤوب المهنية
+                    </span>
+                  </div>
                 </header>
-                <main className="flex-1">
+                <main className="flex-1 overflow-auto">
                   <Routes>
                     <Route path="/" element={<Index />} />
                     <Route path="/about" element={<About />} />
@@ -61,7 +66,6 @@ const App = () => (
                     <Route path="/learning" element={<Learning />} />
                     <Route path="/consultations" element={<Consultations />} />
                     <Route path="/demo" element={<Demo />} />
-                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </main>
