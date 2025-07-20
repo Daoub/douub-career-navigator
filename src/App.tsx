@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -25,11 +24,8 @@ import Pricing from "./pages/Pricing";
 import Contact from "./pages/Contact";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
-
 const queryClient = new QueryClient();
-
-const App = () => (
-  <QueryClientProvider client={queryClient}>
+const App = () => <QueryClientProvider client={queryClient}>
     <TranslationProvider>
       <TooltipProvider>
         <Toaster />
@@ -41,11 +37,7 @@ const App = () => (
               <div className="flex-1 flex flex-col">
                 <header className="h-12 flex items-center border-b bg-white/80 backdrop-blur-sm px-4 sticky top-0 z-40">
                   <SidebarTrigger className="ml-2" />
-                  <div className="flex-1 text-center">
-                    <span className="text-lg font-semibold bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">
-                      منصة دؤوب المهنية
-                    </span>
-                  </div>
+                  
                 </header>
                 <main className="flex-1 overflow-auto">
                   <Routes>
@@ -75,7 +67,5 @@ const App = () => (
         </BrowserRouter>
       </TooltipProvider>
     </TranslationProvider>
-  </QueryClientProvider>
-);
-
+  </QueryClientProvider>;
 export default App;
