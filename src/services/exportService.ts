@@ -240,22 +240,32 @@ class ExportService {
   }
 
   async exportResume(resumeData: ResumeData, options: ExportOptions): Promise<void> {
+    const isArabic = options.language === 'ar';
+    
     // Validate resume data
     if (!resumeData.personalInfo?.name) {
-      throw new Error('Resume must have a name to export');
+      throw new Error(isArabic ? 'الاسم مطلوب لتصدير السيرة الذاتية' : 'Name is required to export resume');
     }
 
-    switch (options.format) {
-      case 'pdf':
-        return pdfExportService.exportToPDF(resumeData, options);
-      case 'docx':
-        return this.exportToWord(resumeData, options);
-      case 'html':
-        return htmlExportService.exportToHTML(resumeData, options);
-      case 'json':
-        return this.exportToJSON(resumeData, options);
-      default:
-        throw new Error(`Unsupported export format: ${options.format}`);
+    try {
+      switch (options.format) {
+        case 'pdf':
+          return await pdfExportService.exportToPDF(resumeData, options);
+        case 'docx':
+          return await this.exportToWord(resumeData, options);
+        case 'html':
+          return await htmlExportService.exportToHTML(resumeData, options);
+        case 'json':
+          return await this.exportToJSON(resumeData, options);
+        default:
+          throw new Error(isArabic ? `تنسيق التصدير غير مدعوم: ${options.format}` : `Unsupported export format: ${options.format}`);
+      }
+    } catch (error) {
+      console.error('Export error:', error);
+      throw new Error(isArabic ? 
+        `فشل في تصدير السيرة الذاتية: ${error instanceof Error ? error.message : 'خطأ غير معروف'}` :
+        `Failed to export resume: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 }

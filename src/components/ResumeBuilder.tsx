@@ -14,25 +14,17 @@ import {
   Award, 
   Plus, 
   Trash2, 
-  Edit, 
   Save,
   Eye,
   Download,
-  Upload,
-  Calendar,
-  MapPin,
-  Phone,
-  Mail,
-  Globe,
   FileText,
-  CheckCircle
+  CheckCircle,
+  BookOpen
 } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useToast } from '@/hooks/use-toast';
-import { skillCategories, getAllSkills, getAllSkills_Ar, searchSkills, searchSkills_Ar } from '@/data/commonSkills';
-import { saudiCities } from '@/data/saudiCities';
-import { jobCategories } from '@/data/jobCategories';
-import { Course, Certificate as CoursesCertificate, saudiCertificationProviders, internationalCertificationProviders } from '@/data/courses';
+import { skillCategories, getAllSkills, getAllSkills_Ar } from '@/data/commonSkills';
+import ResumeProgressCard from './ResumeProgressCard';
 
 interface PersonalInfo {
   name: string;
@@ -85,6 +77,17 @@ interface Certificate {
   expiryDate?: string;
   credentialId?: string;
   verificationUrl?: string;
+  description?: string;
+}
+
+interface Course {
+  id: string;
+  title: string;
+  provider: string;
+  date: string;
+  description?: string;
+  hours?: number;
+  skills: string[];
 }
 
 interface ResumeData {
@@ -93,9 +96,7 @@ interface ResumeData {
   education: Education[];
   skills: Skill[];
   certificates: Certificate[];
-  courses: any[];
-  projects?: any[];
-  languages?: any[];
+  courses: Course[];
   template: string;
   lastModified: Date;
 }
@@ -105,18 +106,23 @@ interface ResumeBuilderProps {
   onPreview?: (data: ResumeData) => void;
   onExport?: (data: ResumeData) => void;
   initialData?: Partial<ResumeData>;
+  mode?: 'new' | 'update';
 }
 
 const ResumeBuilder: React.FC<ResumeBuilderProps> = ({
   onSave,
   onPreview,
   onExport,
-  initialData
+  initialData,
+  mode = 'new'
 }) => {
   const { t, language } = useTranslation();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('personal');
   const [isSaving, setIsSaving] = useState(false);
+  const [skillInput, setSkillInput] = useState('');
+  const [skillLevel, setSkillLevel] = useState<Skill['level']>('intermediate');
+  const [skillCategory, setSkillCategory] = useState<Skill['category']>('technical');
 
   const [resumeData, setResumeData] = useState<ResumeData>({
     personalInfo: {
@@ -140,24 +146,34 @@ const ResumeBuilder: React.FC<ResumeBuilderProps> = ({
     ...initialData
   });
 
+  // Auto-save functionality
   useEffect(() => {
-    // Auto-save functionality
     const autoSave = setTimeout(() => {
       handleAutoSave();
-    }, 30000); // Auto-save every 30 seconds
+    }, 30000);
 
     return () => clearTimeout(autoSave);
   }, [resumeData]);
 
-  const handleAutoSave = async () => {
+  // Load saved draft on mount
+  useEffect(() => {
+    const savedDraft = localStorage.getItem('resume_draft');
+    if (savedDraft && mode === 'update') {
+      try {
+        const draft = JSON.parse(savedDraft);
+        setResumeData(prev => ({ ...prev, ...draft }));
+      } catch (error) {
+        console.warn('Failed to load draft:', error);
+      }
+    }
+  }, [mode]);
+
+  const handleAutoSave = () => {
     try {
       localStorage.setItem('resume_draft', JSON.stringify(resumeData));
-      toast({
-        title: t('common.success'),
-        description: language === 'ar' ? 'تم حفظ المسودة تلقائياً' : 'Draft saved automatically',
-      });
+      localStorage.setItem('resume_autosave_timestamp', Date.now().toString());
     } catch (error) {
-      console.error('Auto-save failed:', error);
+      console.warn('Auto-save failed:', error);
     }
   };
 
@@ -169,15 +185,19 @@ const ResumeBuilder: React.FC<ResumeBuilderProps> = ({
         lastModified: new Date()
       };
       setResumeData(updatedData);
+      
+      // Save to localStorage
+      localStorage.setItem('resume_saved', JSON.stringify(updatedData));
+      
       onSave?.(updatedData);
       
       toast({
-        title: t('common.success'),
+        title: language === 'ar' ? 'نجح الحفظ' : 'Success',
         description: language === 'ar' ? 'تم حفظ السيرة الذاتية بنجاح' : 'Resume saved successfully',
       });
     } catch (error) {
       toast({
-        title: t('common.error'),
+        title: language === 'ar' ? 'خطأ' : 'Error',
         description: language === 'ar' ? 'فشل في حفظ السيرة الذاتية' : 'Failed to save resume',
         variant: 'destructive'
       });
@@ -186,6 +206,7 @@ const ResumeBuilder: React.FC<ResumeBuilderProps> = ({
     }
   };
 
+  // Experience functions
   const addExperience = () => {
     const newExperience: Experience = {
       id: Date.now().toString(),
@@ -220,6 +241,7 @@ const ResumeBuilder: React.FC<ResumeBuilderProps> = ({
     }));
   };
 
+  // Education functions
   const addEducation = () => {
     const newEducation: Education = {
       id: Date.now().toString(),
@@ -254,14 +276,34 @@ const ResumeBuilder: React.FC<ResumeBuilderProps> = ({
     }));
   };
 
-  const addSkill = (name: string, level: Skill['level'], category: Skill['category']) => {
-    if (!name.trim()) return;
+  // Skills functions
+  const addSkill = () => {
+    if (!skillInput.trim()) return;
     
     const newSkill: Skill = {
       id: Date.now().toString(),
-      name: name.trim(),
-      level,
-      category
+      name: skillInput.trim(),
+      level: skillLevel,
+      category: skillCategory
+    };
+    
+    setResumeData(prev => ({
+      ...prev,
+      skills: [...prev.skills, newSkill]
+    }));
+    
+    setSkillInput('');
+  };
+
+  const addPredefinedSkill = (skillName: string) => {
+    const existingSkill = resumeData.skills.find(skill => skill.name === skillName);
+    if (existingSkill) return;
+
+    const newSkill: Skill = {
+      id: Date.now().toString(),
+      name: skillName,
+      level: 'intermediate',
+      category: skillCategory
     };
     
     setResumeData(prev => ({
@@ -277,6 +319,7 @@ const ResumeBuilder: React.FC<ResumeBuilderProps> = ({
     }));
   };
 
+  // Certificates functions
   const addCertificate = () => {
     const newCertificate: Certificate = {
       id: Date.now().toString(),
@@ -285,7 +328,8 @@ const ResumeBuilder: React.FC<ResumeBuilderProps> = ({
       date: '',
       expiryDate: '',
       credentialId: '',
-      verificationUrl: ''
+      verificationUrl: '',
+      description: ''
     };
     setResumeData(prev => ({
       ...prev,
@@ -309,16 +353,16 @@ const ResumeBuilder: React.FC<ResumeBuilderProps> = ({
     }));
   };
 
+  // Courses functions
   const addCourse = () => {
-    const newCourse = {
+    const newCourse: Course = {
       id: Date.now().toString(),
       title: '',
-      titleAr: '',
       provider: '',
-      providerAr: '',
       date: '',
-      skills: [],
-      certificate: false
+      description: '',
+      hours: 0,
+      skills: []
     };
     setResumeData(prev => ({
       ...prev,
@@ -326,7 +370,7 @@ const ResumeBuilder: React.FC<ResumeBuilderProps> = ({
     }));
   };
 
-  const updateCourse = (id: string, field: string, value: any) => {
+  const updateCourse = (id: string, field: keyof Course, value: any) => {
     setResumeData(prev => ({
       ...prev,
       courses: prev.courses.map(course => 
@@ -352,13 +396,35 @@ const ResumeBuilder: React.FC<ResumeBuilderProps> = ({
     return levels[level];
   };
 
+  const suggestedSkills = language === 'ar' ? getAllSkills_Ar() : getAllSkills();
+  const filteredSkills = suggestedSkills.filter(skill => 
+    skill.toLowerCase().includes(skillInput.toLowerCase()) && 
+    !resumeData.skills.some(existingSkill => existingSkill.name === skill)
+  ).slice(0, 8);
+
+  const calculateProgress = () => {
+    const requiredFields = [
+      resumeData.personalInfo.name,
+      resumeData.personalInfo.email,
+      resumeData.personalInfo.summary,
+      resumeData.experience.length > 0,
+      resumeData.education.length > 0,
+      resumeData.skills.length > 0
+    ];
+    const completed = requiredFields.filter(Boolean).length;
+    return Math.round((completed / requiredFields.length) * 100);
+  };
+
   return (
     <div className="max-w-6xl mx-auto space-y-6">
-      {/* Header Actions */}
+      {/* Header */}
       <div className="flex items-center justify-between bg-card rounded-lg p-4 shadow-sm">
         <div>
           <h2 className="text-hero gradient-text-hero">
-            {t('resume.title')}
+            {mode === 'update' 
+              ? (language === 'ar' ? 'تحديث السيرة الذاتية' : 'Update Resume')
+              : (language === 'ar' ? 'إنشاء سيرة ذاتية جديدة' : 'Create New Resume')
+            }
           </h2>
           <p className="text-muted-foreground text-sm">
             {language === 'ar' 
@@ -392,7 +458,7 @@ const ResumeBuilder: React.FC<ResumeBuilderProps> = ({
             ) : (
               <>
                 <Save className="h-4 w-4" />
-                {t('common.save')}
+                {language === 'ar' ? 'حفظ' : 'Save'}
               </>
             )}
           </Button>
@@ -401,7 +467,7 @@ const ResumeBuilder: React.FC<ResumeBuilderProps> = ({
             className="bg-gradient-primary btn-gradient-hover flex items-center gap-2"
           >
             <Download className="h-4 w-4" />
-            {t('resume.download_pdf')}
+            {language === 'ar' ? 'تحميل PDF' : 'Download PDF'}
           </Button>
         </div>
       </div>
@@ -414,27 +480,27 @@ const ResumeBuilder: React.FC<ResumeBuilderProps> = ({
             <TabsList className="grid w-full grid-cols-6">
               <TabsTrigger value="personal" className="flex items-center gap-2">
                 <User className="h-4 w-4" />
-                <span className="hidden sm:inline">{t('resume.personal_info')}</span>
+                <span className="hidden sm:inline">{language === 'ar' ? 'المعلومات' : 'Personal'}</span>
               </TabsTrigger>
               <TabsTrigger value="experience" className="flex items-center gap-2">
                 <Briefcase className="h-4 w-4" />
-                <span className="hidden sm:inline">{t('resume.experience')}</span>
+                <span className="hidden sm:inline">{language === 'ar' ? 'الخبرة' : 'Experience'}</span>
               </TabsTrigger>
               <TabsTrigger value="education" className="flex items-center gap-2">
                 <GraduationCap className="h-4 w-4" />
-                <span className="hidden sm:inline">{t('resume.education')}</span>
+                <span className="hidden sm:inline">{language === 'ar' ? 'التعليم' : 'Education'}</span>
               </TabsTrigger>
               <TabsTrigger value="skills" className="flex items-center gap-2">
                 <Award className="h-4 w-4" />
-                <span className="hidden sm:inline">{t('resume.skills')}</span>
+                <span className="hidden sm:inline">{language === 'ar' ? 'المهارات' : 'Skills'}</span>
               </TabsTrigger>
               <TabsTrigger value="courses" className="flex items-center gap-2">
-                <GraduationCap className="h-4 w-4" />
+                <BookOpen className="h-4 w-4" />
                 <span className="hidden sm:inline">{language === 'ar' ? 'الدورات' : 'Courses'}</span>
               </TabsTrigger>
               <TabsTrigger value="certificates" className="flex items-center gap-2">
                 <FileText className="h-4 w-4" />
-                <span className="hidden sm:inline">{t('resume.certificates')}</span>
+                <span className="hidden sm:inline">{language === 'ar' ? 'الشهادات' : 'Certificates'}</span>
               </TabsTrigger>
             </TabsList>
 
@@ -444,7 +510,7 @@ const ResumeBuilder: React.FC<ResumeBuilderProps> = ({
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <User className="h-5 w-5 text-primary" />
-                    {t('resume.personal_info')}
+                    {language === 'ar' ? 'المعلومات الشخصية' : 'Personal Information'}
                   </CardTitle>
                   <CardDescription>
                     {language === 'ar' 
@@ -454,7 +520,6 @@ const ResumeBuilder: React.FC<ResumeBuilderProps> = ({
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  {/* Basic Info */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="name">{language === 'ar' ? 'الاسم الكامل' : 'Full Name'}</Label>
@@ -478,7 +543,7 @@ const ResumeBuilder: React.FC<ResumeBuilderProps> = ({
                           ...prev,
                           personalInfo: { ...prev.personalInfo, email: e.target.value }
                         }))}
-                        placeholder={language === 'ar' ? 'your@email.com' : 'your@email.com'}
+                        placeholder="your@email.com"
                       />
                     </div>
                     <div className="space-y-2">
@@ -506,36 +571,7 @@ const ResumeBuilder: React.FC<ResumeBuilderProps> = ({
                       />
                     </div>
                   </div>
-
-                  {/* Additional Info */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="linkedin">{language === 'ar' ? 'ملف LinkedIn' : 'LinkedIn Profile'}</Label>
-                      <Input
-                        id="linkedin"
-                        value={resumeData.personalInfo.linkedIn || ''}
-                        onChange={(e) => setResumeData(prev => ({
-                          ...prev,
-                          personalInfo: { ...prev.personalInfo, linkedIn: e.target.value }
-                        }))}
-                        placeholder="linkedin.com/in/yourprofile"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="nationality">{language === 'ar' ? 'الجنسية' : 'Nationality'}</Label>
-                      <Input
-                        id="nationality"
-                        value={resumeData.personalInfo.nationality || ''}
-                        onChange={(e) => setResumeData(prev => ({
-                          ...prev,
-                          personalInfo: { ...prev.personalInfo, nationality: e.target.value }
-                        }))}
-                        placeholder={language === 'ar' ? 'السعودية' : 'Saudi Arabia'}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Professional Summary */}
+                  
                   <div className="space-y-2">
                     <Label htmlFor="summary">{language === 'ar' ? 'الملخص المهني' : 'Professional Summary'}</Label>
                     <Textarea
@@ -546,8 +582,8 @@ const ResumeBuilder: React.FC<ResumeBuilderProps> = ({
                         personalInfo: { ...prev.personalInfo, summary: e.target.value }
                       }))}
                       placeholder={language === 'ar' 
-                        ? 'اكتب ملخصاً مختصراً عن خبراتك ومهاراتك المهنية...'
-                        : 'Write a brief summary of your professional experience and skills...'
+                        ? 'اكتب ملخصاً مهنياً عن خبراتك ومهاراتك...'
+                        : 'Write a professional summary about your experience and skills...'
                       }
                       rows={4}
                     />
@@ -560,127 +596,77 @@ const ResumeBuilder: React.FC<ResumeBuilderProps> = ({
             <TabsContent value="experience">
               <Card className="card-vision">
                 <CardHeader>
-                  <div className="flex items-center justify-between">
+                  <div className="flex justify-between items-center">
                     <div>
                       <CardTitle className="flex items-center gap-2">
                         <Briefcase className="h-5 w-5 text-primary" />
-                        {t('resume.experience')}
+                        {language === 'ar' ? 'الخبرة المهنية' : 'Professional Experience'}
                       </CardTitle>
                       <CardDescription>
                         {language === 'ar' 
                           ? 'أضف خبراتك المهنية والوظائف السابقة'
-                          : 'Add your professional experience and previous positions'
+                          : 'Add your professional experience and previous jobs'
                         }
                       </CardDescription>
                     </div>
-                    <Button onClick={addExperience} className="flex items-center gap-2">
+                    <Button onClick={addExperience} size="sm" className="flex items-center gap-2">
                       <Plus className="h-4 w-4" />
                       {language === 'ar' ? 'إضافة خبرة' : 'Add Experience'}
                     </Button>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  {resumeData.experience.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <Briefcase className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                      <p>{language === 'ar' ? 'لم تتم إضافة أي خبرة مهنية بعد' : 'No work experience added yet'}</p>
-                      <Button onClick={addExperience} variant="outline" className="mt-3">
-                        {language === 'ar' ? 'إضافة أول خبرة' : 'Add First Experience'}
-                      </Button>
+                  {resumeData.experience.map((exp) => (
+                    <div key={exp.id} className="p-4 border rounded-lg space-y-4">
+                      <div className="flex justify-between items-start">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
+                          <Input
+                            placeholder={language === 'ar' ? 'المسمى الوظيفي' : 'Job Title'}
+                            value={exp.title}
+                            onChange={(e) => updateExperience(exp.id, 'title', e.target.value)}
+                          />
+                          <Input
+                            placeholder={language === 'ar' ? 'اسم الشركة' : 'Company Name'}
+                            value={exp.company}
+                            onChange={(e) => updateExperience(exp.id, 'company', e.target.value)}
+                          />
+                          <Input
+                            placeholder={language === 'ar' ? 'تاريخ البداية' : 'Start Date'}
+                            type="month"
+                            value={exp.startDate}
+                            onChange={(e) => updateExperience(exp.id, 'startDate', e.target.value)}
+                          />
+                          <Input
+                            placeholder={language === 'ar' ? 'تاريخ النهاية' : 'End Date'}
+                            type="month"
+                            value={exp.endDate}
+                            onChange={(e) => updateExperience(exp.id, 'endDate', e.target.value)}
+                            disabled={exp.current}
+                          />
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => removeExperience(exp.id)}
+                          className="ml-2"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      
+                      <Textarea
+                        placeholder={language === 'ar' ? 'وصف المسؤوليات والإنجازات...' : 'Describe responsibilities and achievements...'}
+                        value={exp.description}
+                        onChange={(e) => updateExperience(exp.id, 'description', e.target.value)}
+                        rows={3}
+                      />
                     </div>
-                  ) : (
-                    resumeData.experience.map((exp) => (
-                      <Card key={exp.id} className="border border-border">
-                        <CardContent className="p-4 space-y-4">
-                          <div className="flex items-center justify-between">
-                            <h4 className="font-medium text-foreground">
-                              {exp.title || (language === 'ar' ? 'خبرة جديدة' : 'New Experience')}
-                            </h4>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => removeExperience(exp.id)}
-                              className="text-destructive hover:text-destructive"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                          
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <Label>{language === 'ar' ? 'المسمى الوظيفي' : 'Job Title'}</Label>
-                              <Input
-                                value={exp.title}
-                                onChange={(e) => updateExperience(exp.id, 'title', e.target.value)}
-                                placeholder={language === 'ar' ? 'مطور برمجيات' : 'Software Developer'}
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label>{language === 'ar' ? 'اسم الشركة' : 'Company Name'}</Label>
-                              <Input
-                                value={exp.company}
-                                onChange={(e) => updateExperience(exp.id, 'company', e.target.value)}
-                                placeholder={language === 'ar' ? 'شركة التقنية المتقدمة' : 'Advanced Tech Company'}
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label>{language === 'ar' ? 'الموقع' : 'Location'}</Label>
-                              <Input
-                                value={exp.location}
-                                onChange={(e) => updateExperience(exp.id, 'location', e.target.value)}
-                                placeholder={language === 'ar' ? 'الرياض، السعودية' : 'Riyadh, Saudi Arabia'}
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label>{language === 'ar' ? 'تاريخ البداية' : 'Start Date'}</Label>
-                              <Input
-                                type="month"
-                                value={exp.startDate}
-                                onChange={(e) => updateExperience(exp.id, 'startDate', e.target.value)}
-                              />
-                            </div>
-                          </div>
-
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-3">
-                              <input
-                                type="checkbox"
-                                id={`current-${exp.id}`}
-                                checked={exp.current}
-                                onChange={(e) => updateExperience(exp.id, 'current', e.target.checked)}
-                                className="rounded border-border"
-                              />
-                              <Label htmlFor={`current-${exp.id}`}>
-                                {language === 'ar' ? 'أعمل حالياً في هذا المنصب' : 'Currently working in this position'}
-                              </Label>
-                            </div>
-                            {!exp.current && (
-                              <div className="space-y-2">
-                                <Label>{language === 'ar' ? 'تاريخ الانتهاء' : 'End Date'}</Label>
-                                <Input
-                                  type="month"
-                                  value={exp.endDate}
-                                  onChange={(e) => updateExperience(exp.id, 'endDate', e.target.value)}
-                                />
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label>{language === 'ar' ? 'وصف المهام والمسؤوليات' : 'Job Description & Responsibilities'}</Label>
-                            <Textarea
-                              value={exp.description}
-                              onChange={(e) => updateExperience(exp.id, 'description', e.target.value)}
-                              placeholder={language === 'ar' 
-                                ? 'اكتب وصفاً تفصيلياً لمهامك ومسؤولياتك في هذا المنصب...'
-                                : 'Write a detailed description of your tasks and responsibilities in this position...'
-                              }
-                              rows={3}
-                            />
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))
+                  ))}
+                  
+                  {resumeData.experience.length === 0 && (
+                    <div className="text-center py-8 text-muted-foreground">
+                      {language === 'ar' ? 'لا توجد خبرات مضافة بعد' : 'No experience added yet'}
+                    </div>
                   )}
                 </CardContent>
               </Card>
@@ -690,11 +676,11 @@ const ResumeBuilder: React.FC<ResumeBuilderProps> = ({
             <TabsContent value="education">
               <Card className="card-vision">
                 <CardHeader>
-                  <div className="flex items-center justify-between">
+                  <div className="flex justify-between items-center">
                     <div>
                       <CardTitle className="flex items-center gap-2">
                         <GraduationCap className="h-5 w-5 text-primary" />
-                        {t('resume.education')}
+                        {language === 'ar' ? 'التعليم' : 'Education'}
                       </CardTitle>
                       <CardDescription>
                         {language === 'ar' 
@@ -703,95 +689,56 @@ const ResumeBuilder: React.FC<ResumeBuilderProps> = ({
                         }
                       </CardDescription>
                     </div>
-                    <Button onClick={addEducation} className="flex items-center gap-2">
+                    <Button onClick={addEducation} size="sm" className="flex items-center gap-2">
                       <Plus className="h-4 w-4" />
                       {language === 'ar' ? 'إضافة تعليم' : 'Add Education'}
                     </Button>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  {resumeData.education.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <GraduationCap className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                      <p>{language === 'ar' ? 'لم تتم إضافة أي مؤهل تعليمي بعد' : 'No education added yet'}</p>
-                      <Button onClick={addEducation} variant="outline" className="mt-3">
-                        {language === 'ar' ? 'إضافة أول مؤهل' : 'Add First Education'}
-                      </Button>
+                  {resumeData.education.map((edu) => (
+                    <div key={edu.id} className="p-4 border rounded-lg space-y-4">
+                      <div className="flex justify-between items-start">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
+                          <Input
+                            placeholder={language === 'ar' ? 'الدرجة العلمية' : 'Degree'}
+                            value={edu.degree}
+                            onChange={(e) => updateEducation(edu.id, 'degree', e.target.value)}
+                          />
+                          <Input
+                            placeholder={language === 'ar' ? 'اسم الجامعة/المؤسسة' : 'Institution/University'}
+                            value={edu.institution}
+                            onChange={(e) => updateEducation(edu.id, 'institution', e.target.value)}
+                          />
+                          <Input
+                            placeholder={language === 'ar' ? 'سنة البداية' : 'Start Year'}
+                            type="month"
+                            value={edu.startDate}
+                            onChange={(e) => updateEducation(edu.id, 'startDate', e.target.value)}
+                          />
+                          <Input
+                            placeholder={language === 'ar' ? 'سنة التخرج' : 'Graduation Year'}
+                            type="month"
+                            value={edu.endDate}
+                            onChange={(e) => updateEducation(edu.id, 'endDate', e.target.value)}
+                          />
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => removeEducation(edu.id)}
+                          className="ml-2"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
-                  ) : (
-                    resumeData.education.map((edu) => (
-                      <Card key={edu.id} className="border border-border">
-                        <CardContent className="p-4 space-y-4">
-                          <div className="flex items-center justify-between">
-                            <h4 className="font-medium text-foreground">
-                              {edu.degree || (language === 'ar' ? 'مؤهل تعليمي جديد' : 'New Education')}
-                            </h4>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => removeEducation(edu.id)}
-                              className="text-destructive hover:text-destructive"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                          
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <Label>{language === 'ar' ? 'الدرجة العلمية' : 'Degree'}</Label>
-                              <Input
-                                value={edu.degree}
-                                onChange={(e) => updateEducation(edu.id, 'degree', e.target.value)}
-                                placeholder={language === 'ar' ? 'بكالوريوس علوم الحاسوب' : 'Bachelor of Computer Science'}
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label>{language === 'ar' ? 'اسم المؤسسة' : 'Institution'}</Label>
-                              <Input
-                                value={edu.institution}
-                                onChange={(e) => updateEducation(edu.id, 'institution', e.target.value)}
-                                placeholder={language === 'ar' ? 'جامعة الملك سعود' : 'King Saud University'}
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label>{language === 'ar' ? 'الموقع' : 'Location'}</Label>
-                              <Input
-                                value={edu.location}
-                                onChange={(e) => updateEducation(edu.id, 'location', e.target.value)}
-                                placeholder={language === 'ar' ? 'الرياض، السعودية' : 'Riyadh, Saudi Arabia'}
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label>{language === 'ar' ? 'سنة التخرج' : 'Graduation Year'}</Label>
-                              <Input
-                                type="month"
-                                value={edu.endDate}
-                                onChange={(e) => updateEducation(edu.id, 'endDate', e.target.value)}
-                              />
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <Label>{language === 'ar' ? 'المعدل التراكمي' : 'GPA'}</Label>
-                              <Input
-                                value={edu.gpa || ''}
-                                onChange={(e) => updateEducation(edu.id, 'gpa', e.target.value)}
-                                placeholder="3.8/4.0"
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label>{language === 'ar' ? 'التقديرات والأوسمة' : 'Honors & Awards'}</Label>
-                              <Input
-                                value={edu.honors || ''}
-                                onChange={(e) => updateEducation(edu.id, 'honors', e.target.value)}
-                                placeholder={language === 'ar' ? 'مرتبة الشرف' : 'Magna Cum Laude'}
-                              />
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))
+                  ))}
+                  
+                  {resumeData.education.length === 0 && (
+                    <div className="text-center py-8 text-muted-foreground">
+                      {language === 'ar' ? 'لا توجد مؤهلات تعليمية مضافة بعد' : 'No education added yet'}
+                    </div>
                   )}
                 </CardContent>
               </Card>
@@ -803,110 +750,102 @@ const ResumeBuilder: React.FC<ResumeBuilderProps> = ({
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Award className="h-5 w-5 text-primary" />
-                    {t('resume.skills')}
+                    {language === 'ar' ? 'المهارات' : 'Skills'}
                   </CardTitle>
                   <CardDescription>
                     {language === 'ar' 
-                      ? 'أضف مهاراتك التقنية والشخصية واللغوية'
-                      : 'Add your technical, soft, and language skills'
+                      ? 'أضف مهاراتك التقنية والمهنية'
+                      : 'Add your technical and professional skills'
                     }
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   {/* Add Skill Form */}
-                  <Card className="border-dashed border-2 border-muted-foreground/25">
-                    <CardContent className="p-4">
-                      <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                        <Input
-                          id="new-skill"
-                          placeholder={language === 'ar' ? 'اسم المهارة' : 'Skill name'}
-                        />
-                        <Select>
-                          <SelectTrigger>
-                            <SelectValue placeholder={language === 'ar' ? 'المستوى' : 'Level'} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="beginner">{language === 'ar' ? 'مبتدئ' : 'Beginner'}</SelectItem>
-                            <SelectItem value="intermediate">{language === 'ar' ? 'متوسط' : 'Intermediate'}</SelectItem>
-                            <SelectItem value="advanced">{language === 'ar' ? 'متقدم' : 'Advanced'}</SelectItem>
-                            <SelectItem value="expert">{language === 'ar' ? 'خبير' : 'Expert'}</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <Select>
-                          <SelectTrigger>
-                            <SelectValue placeholder={language === 'ar' ? 'الفئة' : 'Category'} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {skillCategories.map(category => (
-                              <SelectItem key={category.id} value={category.id}>
-                                {language === 'ar' ? category.nameAr : category.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <Button
-                          onClick={() => {
-                            const input = document.getElementById('new-skill') as HTMLInputElement;
-                            const levelSelect = document.querySelector('[data-state="closed"][role="combobox"]') as HTMLSelectElement;
-                            const categorySelect = document.querySelectorAll('[data-state="closed"][role="combobox"]')[1] as HTMLSelectElement;
-                            
-                            if (input?.value) {
-                              addSkill(input.value, 'intermediate', 'technical');
-                              input.value = '';
-                            }
-                          }}
-                          className="flex items-center gap-2"
-                        >
-                          <Plus className="h-4 w-4" />
-                          {language === 'ar' ? 'إضافة' : 'Add'}
-                        </Button>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <Input
+                      placeholder={language === 'ar' ? 'اسم المهارة' : 'Skill name'}
+                      value={skillInput}
+                      onChange={(e) => setSkillInput(e.target.value)}
+                    />
+                    <Select value={skillLevel} onValueChange={(value: Skill['level']) => setSkillLevel(value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder={language === 'ar' ? 'المستوى' : 'Level'} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="beginner">{language === 'ar' ? 'مبتدئ' : 'Beginner'}</SelectItem>
+                        <SelectItem value="intermediate">{language === 'ar' ? 'متوسط' : 'Intermediate'}</SelectItem>
+                        <SelectItem value="advanced">{language === 'ar' ? 'متقدم' : 'Advanced'}</SelectItem>
+                        <SelectItem value="expert">{language === 'ar' ? 'خبير' : 'Expert'}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Select value={skillCategory} onValueChange={(value: Skill['category']) => setSkillCategory(value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder={language === 'ar' ? 'الفئة' : 'Category'} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="technical">{language === 'ar' ? 'تقنية' : 'Technical'}</SelectItem>
+                        <SelectItem value="business">{language === 'ar' ? 'أعمال' : 'Business'}</SelectItem>
+                        <SelectItem value="communication">{language === 'ar' ? 'تواصل' : 'Communication'}</SelectItem>
+                        <SelectItem value="creative">{language === 'ar' ? 'إبداعية' : 'Creative'}</SelectItem>
+                        <SelectItem value="languages">{language === 'ar' ? 'لغات' : 'Languages'}</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button onClick={addSkill} disabled={!skillInput.trim()}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      {language === 'ar' ? 'إضافة' : 'Add'}
+                    </Button>
+                  </div>
+                  
+                  {/* Suggested Skills */}
+                  {skillInput && filteredSkills.length > 0 && (
+                    <div className="space-y-2">
+                      <Label>{language === 'ar' ? 'مهارات مقترحة:' : 'Suggested skills:'}</Label>
+                      <div className="flex flex-wrap gap-2">
+                        {filteredSkills.map((skill) => (
+                          <Badge 
+                            key={skill}
+                            variant="outline" 
+                            className="cursor-pointer hover:bg-primary hover:text-primary-foreground"
+                            onClick={() => addPredefinedSkill(skill)}
+                          >
+                            {skill}
+                          </Badge>
+                        ))}
                       </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Skills Display */}
-                  {resumeData.skills.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <Award className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                      <p>{language === 'ar' ? 'لم تتم إضافة أي مهارة بعد' : 'No skills added yet'}</p>
                     </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {skillCategories.map(category => {
-                        const categorySkills = resumeData.skills.filter(skill => skill.category === category.id);
-                        if (categorySkills.length === 0) return null;
-
+                  )}
+                  
+                  {/* Current Skills */}
+                  <div className="space-y-4">
+                    <Label>{language === 'ar' ? 'المهارات المضافة:' : 'Added skills:'}</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {resumeData.skills.map((skill) => {
+                        const levelBadge = getSkillLevelBadge(skill.level);
                         return (
-                          <div key={category.id}>
-                            <h4 className="font-medium text-foreground mb-3">
-                              {language === 'ar' ? category.nameAr : category.name}
-                            </h4>
-                            <div className="flex flex-wrap gap-2">
-                              {categorySkills.map(skill => {
-                                const levelInfo = getSkillLevelBadge(skill.level);
-                                return (
-                                  <div key={skill.id} className="flex items-center gap-2 bg-muted rounded-lg p-2">
-                                    <span className="text-sm font-medium">{skill.name}</span>
-                                    <Badge variant={levelInfo.variant} className="text-xs">
-                                      {levelInfo.label}
-                                    </Badge>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => removeSkill(skill.id)}
-                                      className="h-auto p-1 text-muted-foreground hover:text-destructive"
-                                    >
-                                      <Trash2 className="h-3 w-3" />
-                                    </Button>
-                                  </div>
-                                );
-                              })}
-                            </div>
+                          <div key={skill.id} className="flex items-center gap-2 bg-muted p-2 rounded-lg">
+                            <span className="font-medium">{skill.name}</span>
+                            <Badge variant={levelBadge.variant} className="text-xs">
+                              {levelBadge.label}
+                            </Badge>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeSkill(skill.id)}
+                              className="h-6 w-6 p-0 ml-2"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
                           </div>
                         );
                       })}
                     </div>
-                  )}
+                    
+                    {resumeData.skills.length === 0 && (
+                      <div className="text-center py-8 text-muted-foreground">
+                        {language === 'ar' ? 'لا توجد مهارات مضافة بعد' : 'No skills added yet'}
+                      </div>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -915,119 +854,69 @@ const ResumeBuilder: React.FC<ResumeBuilderProps> = ({
             <TabsContent value="courses">
               <Card className="card-vision">
                 <CardHeader>
-                  <div className="flex items-center justify-between">
+                  <div className="flex justify-between items-center">
                     <div>
                       <CardTitle className="flex items-center gap-2">
-                        <GraduationCap className="h-5 w-5 text-primary" />
+                        <BookOpen className="h-5 w-5 text-primary" />
                         {language === 'ar' ? 'الدورات التدريبية' : 'Training Courses'}
                       </CardTitle>
                       <CardDescription>
                         {language === 'ar' 
-                          ? 'أضف الدورات التدريبية والبرامج التعليمية التي أكملتها'
-                          : 'Add training courses and educational programs you have completed'
+                          ? 'أضف الدورات التدريبية والشهادات التي حصلت عليها'
+                          : 'Add training courses and certifications you have completed'
                         }
                       </CardDescription>
                     </div>
-                    <Button onClick={addCourse} className="flex items-center gap-2">
+                    <Button onClick={addCourse} size="sm" className="flex items-center gap-2">
                       <Plus className="h-4 w-4" />
                       {language === 'ar' ? 'إضافة دورة' : 'Add Course'}
                     </Button>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  {resumeData.courses.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <GraduationCap className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                      <p>{language === 'ar' ? 'لم تتم إضافة أي دورة تدريبية بعد' : 'No courses added yet'}</p>
-                      <Button onClick={addCourse} variant="outline" className="mt-3">
-                        {language === 'ar' ? 'إضافة أول دورة' : 'Add First Course'}
-                      </Button>
+                  {resumeData.courses.map((course) => (
+                    <div key={course.id} className="p-4 border rounded-lg space-y-4">
+                      <div className="flex justify-between items-start">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
+                          <Input
+                            placeholder={language === 'ar' ? 'اسم الدورة' : 'Course Title'}
+                            value={course.title}
+                            onChange={(e) => updateCourse(course.id, 'title', e.target.value)}
+                          />
+                          <Input
+                            placeholder={language === 'ar' ? 'مقدم الدورة' : 'Course Provider'}
+                            value={course.provider}
+                            onChange={(e) => updateCourse(course.id, 'provider', e.target.value)}
+                          />
+                          <Input
+                            placeholder={language === 'ar' ? 'تاريخ الإنجاز' : 'Completion Date'}
+                            type="month"
+                            value={course.date}
+                            onChange={(e) => updateCourse(course.id, 'date', e.target.value)}
+                          />
+                          <Input
+                            placeholder={language === 'ar' ? 'عدد الساعات' : 'Hours'}
+                            type="number"
+                            value={course.hours || ''}
+                            onChange={(e) => updateCourse(course.id, 'hours', parseInt(e.target.value) || 0)}
+                          />
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => removeCourse(course.id)}
+                          className="ml-2"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
-                  ) : (
-                    resumeData.courses.map((course) => (
-                      <Card key={course.id} className="border border-border">
-                        <CardContent className="p-4 space-y-4">
-                          <div className="flex items-center justify-between">
-                            <h4 className="font-medium text-foreground">
-                              {(language === 'ar' ? course.titleAr : course.title) || (language === 'ar' ? 'دورة تدريبية جديدة' : 'New Course')}
-                            </h4>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => removeCourse(course.id)}
-                              className="text-destructive hover:text-destructive"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                          
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <Label>{language === 'ar' ? 'اسم الدورة (بالعربية)' : 'Course Name (Arabic)'}</Label>
-                              <Input
-                                value={course.titleAr}
-                                onChange={(e) => updateCourse(course.id, 'titleAr', e.target.value)}
-                                placeholder={language === 'ar' ? 'دورة تطوير مواقع الويب' : 'Web Development Course'}
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label>{language === 'ar' ? 'اسم الدورة (بالإنجليزية)' : 'Course Name (English)'}</Label>
-                              <Input
-                                value={course.title}
-                                onChange={(e) => updateCourse(course.id, 'title', e.target.value)}
-                                placeholder="Web Development Course"
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label>{language === 'ar' ? 'مقدم الدورة (بالعربية)' : 'Provider (Arabic)'}</Label>
-                              <Input
-                                value={course.providerAr}
-                                onChange={(e) => updateCourse(course.id, 'providerAr', e.target.value)}
-                                placeholder={language === 'ar' ? 'معهد التدريب المتقدم' : 'Advanced Training Institute'}
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label>{language === 'ar' ? 'مقدم الدورة (بالإنجليزية)' : 'Provider (English)'}</Label>
-                              <Input
-                                value={course.provider}
-                                onChange={(e) => updateCourse(course.id, 'provider', e.target.value)}
-                                placeholder="Advanced Training Institute"
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label>{language === 'ar' ? 'تاريخ الإكمال' : 'Completion Date'}</Label>
-                              <Input
-                                type="month"
-                                value={course.date}
-                                onChange={(e) => updateCourse(course.id, 'date', e.target.value)}
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label>{language === 'ar' ? 'عدد الساعات' : 'Hours'}</Label>
-                              <Input
-                                type="number"
-                                value={course.hours || ''}
-                                onChange={(e) => updateCourse(course.id, 'hours', parseInt(e.target.value))}
-                                placeholder="40"
-                              />
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-3">
-                            <input
-                              type="checkbox"
-                              id={`certificate-${course.id}`}
-                              checked={course.certificate || false}
-                              onChange={(e) => updateCourse(course.id, 'certificate', e.target.checked)}
-                              className="rounded border-border"
-                            />
-                            <Label htmlFor={`certificate-${course.id}`}>
-                              {language === 'ar' ? 'حصلت على شهادة إتمام' : 'Received completion certificate'}
-                            </Label>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))
+                  ))}
+                  
+                  {resumeData.courses.length === 0 && (
+                    <div className="text-center py-8 text-muted-foreground">
+                      {language === 'ar' ? 'لا توجد دورات مضافة بعد' : 'No courses added yet'}
+                    </div>
                   )}
                 </CardContent>
               </Card>
@@ -1037,108 +926,69 @@ const ResumeBuilder: React.FC<ResumeBuilderProps> = ({
             <TabsContent value="certificates">
               <Card className="card-vision">
                 <CardHeader>
-                  <div className="flex items-center justify-between">
+                  <div className="flex justify-between items-center">
                     <div>
                       <CardTitle className="flex items-center gap-2">
                         <FileText className="h-5 w-5 text-primary" />
-                        {t('resume.certificates')}
+                        {language === 'ar' ? 'الشهادات المهنية' : 'Professional Certificates'}
                       </CardTitle>
                       <CardDescription>
                         {language === 'ar' 
-                          ? 'أضف شهاداتك المهنية والدورات التدريبية'
-                          : 'Add your professional certificates and training courses'
+                          ? 'أضف الشهادات المهنية والاعتمادات التي حصلت عليها'
+                          : 'Add professional certificates and accreditations you have earned'
                         }
                       </CardDescription>
                     </div>
-                    <Button onClick={addCertificate} className="flex items-center gap-2">
+                    <Button onClick={addCertificate} size="sm" className="flex items-center gap-2">
                       <Plus className="h-4 w-4" />
                       {language === 'ar' ? 'إضافة شهادة' : 'Add Certificate'}
                     </Button>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  {resumeData.certificates.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <FileText className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                      <p>{language === 'ar' ? 'لم تتم إضافة أي شهادة بعد' : 'No certificates added yet'}</p>
-                      <Button onClick={addCertificate} variant="outline" className="mt-3">
-                        {language === 'ar' ? 'إضافة أول شهادة' : 'Add First Certificate'}
-                      </Button>
+                  {resumeData.certificates.map((cert) => (
+                    <div key={cert.id} className="p-4 border rounded-lg space-y-4">
+                      <div className="flex justify-between items-start">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
+                          <Input
+                            placeholder={language === 'ar' ? 'اسم الشهادة' : 'Certificate Name'}
+                            value={cert.name}
+                            onChange={(e) => updateCertificate(cert.id, 'name', e.target.value)}
+                          />
+                          <Input
+                            placeholder={language === 'ar' ? 'الجهة المانحة' : 'Issuing Organization'}
+                            value={cert.issuer}
+                            onChange={(e) => updateCertificate(cert.id, 'issuer', e.target.value)}
+                          />
+                          <Input
+                            placeholder={language === 'ar' ? 'تاريخ الحصول' : 'Issue Date'}
+                            type="month"
+                            value={cert.date}
+                            onChange={(e) => updateCertificate(cert.id, 'date', e.target.value)}
+                          />
+                          <Input
+                            placeholder={language === 'ar' ? 'تاريخ الانتهاء (اختياري)' : 'Expiry Date (Optional)'}
+                            type="month"
+                            value={cert.expiryDate || ''}
+                            onChange={(e) => updateCertificate(cert.id, 'expiryDate', e.target.value)}
+                          />
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => removeCertificate(cert.id)}
+                          className="ml-2"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
-                  ) : (
-                    resumeData.certificates.map((cert) => (
-                      <Card key={cert.id} className="border border-border">
-                        <CardContent className="p-4 space-y-4">
-                          <div className="flex items-center justify-between">
-                            <h4 className="font-medium text-foreground">
-                              {cert.name || (language === 'ar' ? 'شهادة جديدة' : 'New Certificate')}
-                            </h4>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => removeCertificate(cert.id)}
-                              className="text-destructive hover:text-destructive"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                          
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <Label>{language === 'ar' ? 'اسم الشهادة' : 'Certificate Name'}</Label>
-                              <Input
-                                value={cert.name}
-                                onChange={(e) => updateCertificate(cert.id, 'name', e.target.value)}
-                                placeholder={language === 'ar' ? 'شهادة AWS المطور المعتمد' : 'AWS Certified Developer'}
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label>{language === 'ar' ? 'الجهة المانحة' : 'Issuing Organization'}</Label>
-                              <Input
-                                value={cert.issuer}
-                                onChange={(e) => updateCertificate(cert.id, 'issuer', e.target.value)}
-                                placeholder={language === 'ar' ? 'أمازون ويب سيرفيسز' : 'Amazon Web Services'}
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label>{language === 'ar' ? 'تاريخ الإصدار' : 'Issue Date'}</Label>
-                              <Input
-                                type="month"
-                                value={cert.date}
-                                onChange={(e) => updateCertificate(cert.id, 'date', e.target.value)}
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label>{language === 'ar' ? 'تاريخ انتهاء الصلاحية' : 'Expiry Date'}</Label>
-                              <Input
-                                type="month"
-                                value={cert.expiryDate || ''}
-                                onChange={(e) => updateCertificate(cert.id, 'expiryDate', e.target.value)}
-                              />
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <Label>{language === 'ar' ? 'رقم الشهادة' : 'Credential ID'}</Label>
-                              <Input
-                                value={cert.credentialId || ''}
-                                onChange={(e) => updateCertificate(cert.id, 'credentialId', e.target.value)}
-                                placeholder="ABC123456"
-                              />
-                            </div>
-                            <div className="space-y-2">
-                              <Label>{language === 'ar' ? 'رابط التحقق' : 'Verification URL'}</Label>
-                              <Input
-                                value={cert.verificationUrl || ''}
-                                onChange={(e) => updateCertificate(cert.id, 'verificationUrl', e.target.value)}
-                                placeholder="https://verify.example.com"
-                              />
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))
+                  ))}
+                  
+                  {resumeData.certificates.length === 0 && (
+                    <div className="text-center py-8 text-muted-foreground">
+                      {language === 'ar' ? 'لا توجد شهادات مضافة بعد' : 'No certificates added yet'}
+                    </div>
                   )}
                 </CardContent>
               </Card>
@@ -1146,101 +996,35 @@ const ResumeBuilder: React.FC<ResumeBuilderProps> = ({
           </Tabs>
         </div>
 
-        {/* Resume Preview/Tips Sidebar */}
+        {/* Sidebar */}
         <div className="space-y-6">
           {/* Progress Card */}
-          <Card className="card-vision">
-            <CardHeader>
-              <CardTitle className="text-base">
-                {language === 'ar' ? 'تقدم السيرة الذاتية' : 'Resume Progress'}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {[
-                  { 
-                    section: 'personal', 
-                    label: language === 'ar' ? 'المعلومات الشخصية' : 'Personal Info',
-                    completed: resumeData.personalInfo.name && resumeData.personalInfo.email
-                  },
-                  { 
-                    section: 'experience', 
-                    label: language === 'ar' ? 'الخبرة العملية' : 'Experience',
-                    completed: resumeData.experience.length > 0
-                  },
-                  { 
-                    section: 'education', 
-                    label: language === 'ar' ? 'التعليم' : 'Education',
-                    completed: resumeData.education.length > 0
-                  },
-                  { 
-                    section: 'skills', 
-                    label: language === 'ar' ? 'المهارات' : 'Skills',
-                    completed: resumeData.skills.length >= 3
-                  }
-                ].map(item => (
-                  <div key={item.section} className="flex items-center gap-2">
-                    <CheckCircle 
-                      className={`h-4 w-4 ${
-                        item.completed ? 'text-green-500' : 'text-muted-foreground'
-                      }`} 
-                    />
-                    <span className={`text-sm ${
-                      item.completed ? 'text-foreground' : 'text-muted-foreground'
-                    }`}>
-                      {item.label}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          <ResumeProgressCard 
+            title={language === 'ar' ? 'تقدم السيرة الذاتية' : 'Resume Progress'}
+            progress={calculateProgress()}
+            description={language === 'ar' 
+              ? 'أكمل جميع الأقسام للحصول على سيرة ذاتية متكاملة'
+              : 'Complete all sections for a comprehensive resume'
+            }
+          />
 
           {/* Tips Card */}
           <Card className="card-vision">
             <CardHeader>
-              <CardTitle className="text-base">
-                {language === 'ar' ? 'نصائح مهمة' : 'Important Tips'}
-              </CardTitle>
+              <CardTitle className="text-sm">{language === 'ar' ? 'نصائح' : 'Tips'}</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="text-sm space-y-2">
-                <div className="flex items-start gap-2">
-                  <span className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></span>
-                  <p className="text-muted-foreground">
-                    {language === 'ar' 
-                      ? 'اكتب ملخصاً مهنياً قوياً يبرز خبراتك الرئيسية'
-                      : 'Write a strong professional summary that highlights your key experiences'
-                    }
-                  </p>
-                </div>
-                <div className="flex items-start gap-2">
-                  <span className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></span>
-                  <p className="text-muted-foreground">
-                    {language === 'ar' 
-                      ? 'استخدم كلمات مفتاحية متعلقة بمجال عملك'
-                      : 'Use keywords relevant to your field of work'
-                    }
-                  </p>
-                </div>
-                <div className="flex items-start gap-2">
-                  <span className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></span>
-                  <p className="text-muted-foreground">
-                    {language === 'ar' 
-                      ? 'احرص على دقة المعلومات وتواريخ العمل'
-                      : 'Ensure accuracy of information and work dates'
-                    }
-                  </p>
-                </div>
-                <div className="flex items-start gap-2">
-                  <span className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></span>
-                  <p className="text-muted-foreground">
-                    {language === 'ar' 
-                      ? 'أضف إنجازات محددة بأرقام عندما أمكن'
-                      : 'Add specific achievements with numbers when possible'
-                    }
-                  </p>
-                </div>
+            <CardContent className="space-y-2 text-sm text-muted-foreground">
+              <div className="flex items-start gap-2">
+                <CheckCircle className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                <span>{language === 'ar' ? 'استخدم كلمات مفتاحية متعلقة بمجال عملك' : 'Use keywords relevant to your field'}</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <CheckCircle className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                <span>{language === 'ar' ? 'ركز على الإنجازات بدلاً من المسؤوليات' : 'Focus on achievements rather than responsibilities'}</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <CheckCircle className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                <span>{language === 'ar' ? 'استخدم أرقام ومقاييس عندما أمكن' : 'Use numbers and metrics when possible'}</span>
               </div>
             </CardContent>
           </Card>

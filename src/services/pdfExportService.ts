@@ -14,45 +14,15 @@ export class PDFExportService {
       useCORS: true,
       allowTaint: false,
       backgroundColor: '#ffffff',
-      foreignObjectRendering: true,
-      logging: this.debugMode,
+      logging: false,
       removeContainer: true,
-      imageTimeout: 15000,
+      imageTimeout: 10000,
       windowWidth: 1200,
       windowHeight: 1697,
-      ignoreElements: (element: Element) => {
-        // Ignore hidden elements and overlays
-        const style = window.getComputedStyle(element);
-        return style.display === 'none' || 
-               style.visibility === 'hidden' ||
-               element.classList.contains('loading-overlay') ||
-               element.classList.contains('debug-overlay');
-      }
+      scale: quality === 'high' ? 2.5 : quality === 'print' ? 3 : 2
     };
 
-    switch (quality) {
-      case 'high':
-        return { 
-          ...baseSettings,
-          scale: 2.5,
-          width: 2480,
-          height: 3508
-        };
-      case 'print':
-        return { 
-          ...baseSettings,
-          scale: 3.5,
-          width: 2480,
-          height: 3508
-        };
-      default:
-        return { 
-          ...baseSettings,
-          scale: 2,
-          width: 1754,
-          height: 2480
-        };
-    }
+    return baseSettings;
   }
 
   private async waitForContentToLoad(): Promise<void> {
@@ -298,16 +268,12 @@ export class PDFExportService {
   }
 
   async exportToPDF(resumeData: ResumeData, options: ExportOptions): Promise<void> {
-    console.log('PDF Export: Starting export process...');
-    
-    // Handle "both" language case - default to English for PDF export
     const pdfLanguage = options.language === 'both' ? 'en' : options.language;
+    const isArabic = pdfLanguage === 'ar';
     
-    // Validate resume data first
-    const validation = resumeValidationService.validateResumeData(resumeData, pdfLanguage);
-    if (!validation.isValid) {
-      console.error('PDF Export: Resume validation failed:', validation.errors);
-      throw new Error(validation.errors.join(', '));
+    // Simple validation
+    if (!resumeData.personalInfo?.name) {
+      throw new Error(isArabic ? 'الاسم مطلوب لتصدير السيرة الذاتية' : 'Name is required to export resume');
     }
 
     let tempContainer: HTMLElement | null = null;
